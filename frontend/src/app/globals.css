@@ -4,46 +4,56 @@
 
 @layer base {
   :root {
-    --color-bg: theme(colors.background);
-    --color-text: theme(colors.foreground);
-    --color-border: theme(colors.border);
+    --bg: theme(colors.background.light);
+    --surface: theme(colors.surface.light);
+    --text: theme(colors.text.light);
+    --text-muted: theme(colors.text.muted);
+    --border: theme(colors.border.light);
+  }
+
+  .dark {
+    --bg: theme(colors.background.dark);
+    --surface: theme(colors.surface.dark);
+    --text: theme(colors.text.dark);
+    --text-muted: theme(colors.text.mutedDark);
+    --border: theme(colors.border.dark);
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-[var(--bg)] text-[var(--text)] antialiased;
   }
 
   h1 {
-    @apply text-3xl font-bold text-foreground;
+    @apply text-4xl font-extrabold text-primary;
   }
 
   h2 {
-    @apply text-2xl font-semibold;
+    @apply text-2xl font-bold text-primary;
   }
 
   p {
-    @apply text-muted leading-relaxed;
+    @apply text-[var(--text-muted)] leading-relaxed;
   }
 }
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center rounded-md px-4 py-2 font-medium transition;
+    @apply inline-flex items-center justify-center rounded-lg px-5 py-2.5 font-semibold transition-colors;
   }
 
   .btn-primary {
     @apply btn bg-primary text-white hover:bg-primary-dark;
   }
 
-  .btn-secondary {
-    @apply btn bg-secondary text-white;
+  .btn-accent {
+    @apply btn bg-accent text-black hover:opacity-90;
   }
 
-  .btn-danger {
-    @apply btn bg-danger text-white;
+  .btn-secondary {
+    @apply btn bg-secondary text-white hover:opacity-90;
   }
 
   .card {
-    @apply rounded-lg border border-border bg-white p-6 shadow-sm;
+    @apply rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm;
   }
 }
