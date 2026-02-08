@@ -33,6 +33,11 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     // Helper methods for scalability
+    public function hasVerifiedEmail(): bool
+    {
+        return !is_null($this->email_verified_at);
+    }
+
     public function isApproved(): bool
     {
         return $this->approved_at !== null || $this->role === 'student';  // Students auto-approved after verify
