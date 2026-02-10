@@ -1,105 +1,83 @@
-"use client";
-
-import { useState } from "react";
+import Link from 'next/link';
 
 export default function HomePage() {
-  const [dark, setDark] = useState(false);
-
   return (
-    <div className={dark ? "dark" : ""}>
-      <main className="min-h-screen bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark transition-colors">
-        {/* Header */}
-        <header className="flex items-center justify-between border-b border-border-light dark:border-border-dark p-6">
-          <h1 className="text-3xl font-extrabold text-primary">
-            EduBridge Learn
-          </h1>
-
-          <button
-            onClick={() => setDark(!dark)}
-            className="btn btn-secondary"
-          >
-            Toggle {dark ? "Light" : "Dark"} Mode
-          </button>
-        </header>
-
-        {/* Hero */}
-        <section className="px-6 py-16 text-center">
-          <h2 className="mb-4 text-4xl font-extrabold text-primary">
-            Learn Faster. Learn Smarter.
-          </h2>
-          <p className="mx-auto mb-8 max-w-xl text-text-muted dark:text-text-mutedDark">
-            A high-energy tutoring platform built to help students succeed.
-          </p>
-
-          <div className="flex justify-center gap-4">
-            <button className="btn btn-accent">Get Started</button>
-            <button className="btn btn-primary">Browse Subjects</button>
-          </div>
-        </section>
-
-        {/* Color Cards */}
-        <section className="grid gap-6 px-6 pb-16 md:grid-cols-3">
-          <div className="card">
-            <h3 className="mb-2 text-xl font-bold text-primary">Primary</h3>
-            <p className="text-text-muted dark:text-text-mutedDark">
-              Trust, clarity, education
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10" />
+        
+        <div className="relative max-w-7xl mx-auto px-4 py-20">
+          <div className="text-center">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6">
+              Welcome to Our
+              <span className="text-primary"> Learning Platform</span>
+            </h1>
+            <p className="text-xl text-[var(--text-muted)] mb-8 max-w-2xl mx-auto">
+              Join thousands of students, tutors, and contributors in our vibrant learning community.
             </p>
-            <div className="mt-4 h-16 rounded-lg bg-primary"></div>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/register" className="btn-primary px-8 py-3 text-lg">
+                Get Started
+              </Link>
+              <Link href="/login" className="btn border border-primary text-primary hover:bg-primary/10 px-8 py-3 text-lg">
+                Sign In
+              </Link>
+            </div>
           </div>
+        </div>
+      </section>
 
-          <div className="card">
-            <h3 className="mb-2 text-xl font-bold text-secondary">
-              Secondary
-            </h3>
-            <p className="text-text-muted dark:text-text-mutedDark">
-              Growth, progress, success
+      {/* Features Section */}
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12">Choose Your Role</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                title: 'Student',
+                description: 'Learn from expert tutors, access curated resources, and track your progress.',
+                icon: '🎓',
+                color: 'primary',
+              },
+              {
+                title: 'Tutor',
+                description: 'Share your knowledge, create courses, and mentor students.',
+                icon: '👨‍🏫',
+                color: 'secondary',
+              },
+              {
+                title: 'Contributor',
+                description: 'Create learning materials, contribute resources, and help improve content.',
+                icon: '📚',
+                color: 'accent',
+              },
+            ].map((feature, index) => (
+              <div key={index} className="card text-center hover:shadow-lg transition-shadow">
+                <div className="text-4xl mb-4">{feature.icon}</div>
+                <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
+                <p className="text-[var(--text-muted)]">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <div className="card bg-gradient-to-r from-primary/10 to-secondary/10">
+            <h2 className="text-3xl font-bold mb-4">Ready to Join?</h2>
+            <p className="text-xl text-[var(--text-muted)] mb-8">
+              Create your account and start your learning journey today.
             </p>
-            <div className="mt-4 h-16 rounded-lg bg-secondary"></div>
+            <Link href="/register" className="btn-primary px-8 py-3 text-lg inline-block">
+              Create Free Account
+            </Link>
           </div>
-
-          <div className="card">
-            <h3 className="mb-2 text-xl font-bold text-accent">
-              Accent
-            </h3>
-            <p className="text-text-muted dark:text-text-mutedDark">
-              Energy, attention, motivation
-            </p>
-            <div className="mt-4 h-16 rounded-lg bg-accent"></div>
-          </div>
-        </section>
-
-        {/* Status Colors */}
-        <section className="px-6 pb-16">
-          <h2 className="mb-6 text-2xl font-bold text-primary">
-            Status & UI Elements
-          </h2>
-
-          <div className="flex flex-wrap gap-4">
-            <span className="rounded-lg bg-secondary px-4 py-2 font-semibold text-white">
-              Success
-            </span>
-
-            <span className="rounded-lg bg-accent px-4 py-2 font-semibold text-black">
-              Highlight
-            </span>
-
-            <span className="rounded-lg bg-danger px-4 py-2 font-semibold text-white">
-              Error
-            </span>
-
-            <span className="rounded-lg border border-border-light dark:border-border-dark px-4 py-2">
-              Neutral
-            </span>
-          </div>
-        </section>
-
-        {/* Footer */}
-        <footer className="border-t border-border-light dark:border-border-dark px-6 py-8 text-center">
-          <p className="text-text-muted dark:text-text-mutedDark">
-            © 2026 EduBridge Learn · Built for students, trusted by parents
-          </p>
-        </footer>
-      </main>
+        </div>
+      </section>
     </div>
   );
 }

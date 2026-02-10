@@ -56,4 +56,37 @@
   .card {
     @apply rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm;
   }
+
+/* Custom scrollbar */
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-[var(--border)] rounded-full;
+  }
+
+  /* Form styles */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--text);
+    -webkit-box-shadow: 0 0 0px 1000px transparent inset;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
+  /* Selection */
+  ::selection {
+    @apply bg-primary/30;
+  }
+
+}
+
+/* Smooth transitions */
+* {
+  @apply transition-colors duration-200;
 }
