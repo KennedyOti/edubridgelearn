@@ -12,8 +12,17 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
-    })
+    $middleware->api(prepend: [
+        \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+    ]);
+
+    $middleware->alias([
+        'cors' => \Illuminate\Http\Middleware\HandleCors::class,
+    ]);
+
+    // You might also want to add throttle middleware globally
+    $middleware->throttleApi('60,1');
+})
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
