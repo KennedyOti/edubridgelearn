@@ -31,6 +31,10 @@
     @apply text-2xl font-bold text-primary;
   }
 
+  h3 {
+    @apply text-xl font-semibold text-primary;
+  }
+
   p {
     @apply text-[var(--text-muted)] leading-relaxed;
   }
@@ -42,18 +46,62 @@
   }
 
   .btn-primary {
-    @apply btn bg-primary text-white hover:bg-primary-dark;
+    @apply btn bg-primary text-white hover:bg-primary-dark dark:bg-primary dark:hover:bg-primary-dark;
   }
 
   .btn-accent {
-    @apply btn bg-accent text-black hover:opacity-90;
+    @apply btn bg-accent text-black hover:opacity-90 dark:bg-accent dark:text-black;
   }
 
   .btn-secondary {
-    @apply btn bg-secondary text-white hover:opacity-90;
+    @apply btn bg-secondary text-white hover:opacity-90 dark:bg-secondary dark:hover:opacity-90;
   }
 
   .card {
     @apply rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm;
+  }
+}
+
+/* Custom scrollbar */
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-[var(--border)] rounded-full;
+  }
+
+  /* Smooth transitions */
+  * {
+    @apply transition-colors duration-200;
+  }
+
+  /* Form autofill styles */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--text);
+    -webkit-box-shadow: 0 0 0px 1000px var(--surface) inset;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
+  /* Selection */
+  ::selection {
+    @apply bg-primary/30;
+  }
+
+  /* Hide number input arrows */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    @apply appearance-none m-0;
   }
 }

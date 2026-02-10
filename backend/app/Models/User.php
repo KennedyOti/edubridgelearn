@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\VerifyEmailCustom;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -15,7 +16,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
-        'role',  // Add this
+        'role',
     ];
 
     protected $hidden = [
@@ -27,7 +28,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
-            'approved_at' => 'datetime',  // Add this
+            'approved_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
@@ -47,4 +48,9 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isTutor(): bool { return $this->role === 'tutor'; }
     public function isContributor(): bool { return $this->role === 'contributor'; }
     public function isAdmin(): bool { return $this->role === 'admin'; }
+
+    public function sendEmailVerificationNotification()
+{
+    $this->notify(new VerifyEmailCustom());
+}
 }
