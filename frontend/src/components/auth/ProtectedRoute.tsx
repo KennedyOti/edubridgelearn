@@ -20,19 +20,19 @@ export default function ProtectedRoute({
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-      return;
-    }
+    if (!loading) {
+      if (!user) {
+        router.push('/login');
+        return;
+      }
 
-    if (!loading && user) {
       if (requireVerified && !user.email_verified_at) {
         router.push('/verify-email');
         return;
       }
       
-      if (requireApproved && !user.approved_at) {
-        router.push('/login?message=pending_approval');
+      if (requireApproved && !user.approved_at && user.role !== 'student') {
+        router.push('/pending-approval');
         return;
       }
     }

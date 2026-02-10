@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { authAPI, type User } from '@/lib/api/auth';
 
@@ -7,11 +7,7 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       const userData = await authAPI.getCurrentUser();
       setUser(userData);
@@ -20,13 +16,17 @@ export function useAuth() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  /* useEffect(() => {   // Should be added on logged in pages
+    checkAuth();
+  }, [checkAuth]); */
 
   const login = async (email: string, password: string) => {
     try {
       const response = await authAPI.login({ email, password });
       setUser(response.user);
-      router.push('/dashboard');
+      router.push('/dashboard'); // redirect after login
       return { success: true };
     } catch (error: any) {
       return { 
@@ -39,7 +39,7 @@ export function useAuth() {
   const register = async (userData: any) => {
     try {
       await authAPI.register(userData);
-      router.push('/login?registered=true');
+      router.push('/login?registered=true'); // redirect after registration
       return { success: true };
     } catch (error: any) {
       return { 

@@ -34,6 +34,10 @@ export interface User {
   approved_at?: string;
 }
 
+export interface ResendVerificationData {
+  email: string;
+}
+
 class AuthAPI {
   // Register
   async register(data: RegisterData): Promise<{ message: string }> {
@@ -71,17 +75,24 @@ class AuthAPI {
     return response.data;
   }
 
-  // Resend verification email
+  // Resend verification email (authenticated)
   async resendVerification(): Promise<{ message: string }> {
     const response = await api.post(API_ENDPOINTS.AUTH.EMAIL_VERIFICATION.RESEND);
     return response.data;
   }
 
-  // Verify email
+  // Resend verification email (unauthenticated - you need to create this endpoint)
+  async resendVerificationToEmail(email: string): Promise<{ message: string }> {
+    const response = await api.post('/email/resend-unauthenticated', { email });
+    return response.data;
+  }
+
+  // Verify email via link
   async verifyEmail(id: string, hash: string): Promise<{ message: string }> {
     const response = await api.get(API_ENDPOINTS.AUTH.EMAIL_VERIFICATION.VERIFY(id, hash));
     return response.data;
   }
+  
 }
 
 export const authAPI = new AuthAPI();

@@ -41,13 +41,13 @@ export default function RegisterPage() {
     setMessage(null);
 
     const result = await registerUser(data);
-    
+
     if (result.success) {
       setMessage({ type: 'success', text: 'Registration successful! Please check your email to verify your account.' });
     } else {
       setMessage({ type: 'error', text: result.error });
     }
-    
+
     setIsLoading(false);
   };
 
@@ -59,7 +59,7 @@ export default function RegisterPage() {
       footerLink={{ text: "Sign in", href: "/login" }}
     >
       {message && <FormMessage type={message.type} message={message.text} />}
-      
+
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <InputField
           label="Full Name"
@@ -109,20 +109,22 @@ export default function RegisterPage() {
             {['student', 'tutor', 'contributor'].map((role) => (
               <label
                 key={role}
-                className={`flex items-center justify-center p-3 border rounded-lg cursor-pointer transition-colors ${
-                  errors.role ? 'border-danger' : 'border-[var(--border)]'
-                } hover:border-primary`}
+                          className={`flex items-center justify-center p-3 border rounded-lg cursor-pointer transition-colors
+                  peer-checked:border-primary peer-checked:bg-primary/20
+                  ${errors.role ? 'border-danger' : 'border-[var(--border)]'}
+                `}
               >
                 <input
                   type="radio"
                   value={role}
                   {...register('role', { required: true })}
-                  className="sr-only"
+                  className="sr-only peer"
                 />
                 <span className="text-sm font-medium capitalize">{role}</span>
               </label>
             ))}
           </div>
+
           {errors.role && (
             <p className="text-sm text-danger">{errors.role.message}</p>
           )}

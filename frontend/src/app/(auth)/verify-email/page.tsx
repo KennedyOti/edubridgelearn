@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/auth';
 import AuthFormWrapper from '@/components/auth/AuthFormWrapper';
 import FormMessage from '@/components/auth/FormMessage';
@@ -11,6 +12,14 @@ export default function VerifyEmailPage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { user, checkAuth } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Redirect if user is not logged in
+    if (!user) {
+      router.push('/login');
+    }
+  }, [user, router]);
 
   const handleResendVerification = async () => {
     setIsLoading(true);
@@ -96,6 +105,18 @@ export default function VerifyEmailPage() {
           >
             I've verified my email
           </button>
+          
+          <div className="pt-4 border-t border-[var(--border)]">
+            <p className="text-sm text-[var(--text-muted)]">
+              Using a different email?{' '}
+              <button
+                onClick={() => router.push('/logout')}
+                className="text-primary hover:text-primary-dark font-medium"
+              >
+                Logout and try again
+              </button>
+            </p>
+          </div>
         </div>
       </div>
     </AuthFormWrapper>
