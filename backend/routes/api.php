@@ -10,12 +10,13 @@ use Illuminate\Http\Request;
 
 // Public auth routes (no middleware)
 Route::post('/register', [RegisterController::class, 'store']);
-Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:auth');  // Rate limit
+Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:auth');  
 Route::post('/logout', [LogoutController::class, 'store'])->middleware('auth:sanctum');
 Route::post('/email/resend', [EmailVerificationController::class, 'resend'])->middleware('auth:sanctum');
+
 Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
-    ->middleware(['auth:sanctum', 'signed'])  // Signed for security
     ->name('verification.verify');
+
 Route::post('/forgot-password', [PasswordResetController::class, 'forgot'])->middleware('throttle:auth');
 Route::post('/reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:auth');
 Route::post('/email/resend-unauthenticated', [EmailVerificationController::class, 'resendUnauthenticated'])

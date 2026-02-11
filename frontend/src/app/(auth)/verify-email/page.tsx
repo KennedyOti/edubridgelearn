@@ -1,123 +1,96 @@
+// frontend/src/app/(auth)/verify-email/page.tsx
+
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/hooks/auth';
+import { useEffect, useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import AuthFormWrapper from '@/components/auth/AuthFormWrapper';
-import FormMessage from '@/components/auth/FormMessage';
 import LoadingSpinner from '@/components/auth/LoadingSpinner';
 import { authAPI } from '@/lib/api/auth';
+import Link from 'next/link';
 
 export default function VerifyEmailPage() {
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const { user, checkAuth } = useAuth();
+  const searchParams = useSearchParams();
   const router = useRouter();
 
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [message, setMessage] = useState('');
+
   useEffect(() => {
-    // Redirect if user is not logged in
-    if (!user) {
-      router.push('/login');
-    }
-  }, [user, router]);
+    const verify = async () => {
+      const id = searchParams.get('id');
+      const hash = searchParams.get('hash');
 
-  const handleResendVerification = async () => {
-    setIsLoading(true);
-    setMessage(null);
+      if (!id || !hash) {
+        setStatus('error');
+        setMessage('Invalid verification link.');
+        return;
+      }
 
-    try {
-      await authAPI.resendVerification();
-      setMessage({
-        type: 'success',
-        text: 'Verification email resent! Please check your inbox.',
-      });
-    } catch (error: any) {
-      setMessage({
-        type: 'error',
-        text: error.response?.data?.message || 'Failed to resend verification email',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      try {
+        const queryString = searchParams.toString();
 
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
-  }
+        const response = await authAPI.verifyEmail(
+          id,
+          hash,
+          queryString
+        );
 
-  if (user.email_verified_at) {
-    return (
-      <AuthFormWrapper title="Email Verified">
-        <div className="text-center space-y-4">
-          <div className="mx-auto w-12 h-12 bg-secondary/20 rounded-full flex items-center justify-center">
-            <svg className="w-6 h-6 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h2 className="text-xl font-semibold">Your email is verified!</h2>
-          <p className="text-[var(--text-muted)]">
-            You can now access all features. Redirecting to dashboard...
-          </p>
-        </div>
-      </AuthFormWrapper>
-    );
-  }
+        setStatus('success');
+        setMessage(response.message || 'Email verified successfully!');
+
+        setTimeout(() => {
+          router.push('/login?verified=true');
+        }, 3000);
+      } catch (error: any) {
+        setStatus('error');
+        setMessage(
+          error.response?.data?.message ||
+          'Verification failed. The link may be invalid or expired.'
+        );
+      }
+    };
+
+    verify();
+  }, [searchParams, router]);
 
   return (
     <AuthFormWrapper
-      title="Verify Your Email"
-      subtitle={`We sent a verification link to ${user.email}`}
+      title="Email Verification"
+      subtitle="Processing your verification link..."
     >
-      {message && <FormMessage type={message.type} message={message.text} />}
-      
       <div className="space-y-6 text-center">
-        <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-          <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-          </svg>
-        </div>
+        {status === 'loading' && (
+          <>
+            <LoadingSpinner size="md" />
+            <p>Please wait while we verify your email...</p>
+          </>
+        )}
 
-        <div className="space-y-3">
-          <p className="text-[var(--text-muted)]">
-            Check your email inbox and click the verification link to activate your account.
-          </p>
-          <p className="text-sm text-[var(--text-muted)]">
-            Didn't receive the email? Check your spam folder or request a new link.
-          </p>
-        </div>
+        {status === 'success' && (
+          <>
+            <h2 className="text-xl font-semibold text-secondary">
+              Email Verified 🎉
+            </h2>
+            <p>{message}</p>
+            <p className="text-sm">Redirecting to login...</p>
+          </>
+        )}
 
-        <div className="space-y-3">
-          <button
-            onClick={handleResendVerification}
-            disabled={isLoading}
-            className="w-full btn-secondary"
-          >
-            {isLoading ? <LoadingSpinner size="sm" /> : 'Resend Verification Email'}
-          </button>
-          
-          <button
-            onClick={checkAuth}
-            className="w-full text-sm text-primary hover:text-primary-dark font-medium"
-          >
-            I've verified my email
-          </button>
-          
-          <div className="pt-4 border-t border-[var(--border)]">
-            <p className="text-sm text-[var(--text-muted)]">
-              Using a different email?{' '}
-              <button
-                onClick={() => router.push('/logout')}
-                className="text-primary hover:text-primary-dark font-medium"
-              >
-                Logout and try again
-              </button>
-            </p>
-          </div>
-        </div>
+        {status === 'error' && (
+          <>
+            <h2 className="text-xl font-semibold text-danger">
+              Verification Failed
+            </h2>
+            <p>{message}</p>
+
+            <div className="space-y-3">
+              <Link href="/login" className="btn-primary block">
+                Go to Login
+              </Link>
+            </div>
+          </>
+        )}
       </div>
     </AuthFormWrapper>
   );
