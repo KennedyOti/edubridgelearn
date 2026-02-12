@@ -6,13 +6,19 @@ const api = axios.create({
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
-  withCredentials: true, // Important for sessions/cookies
+  // withCredentials: true, // Not needed for token-based auth
 });
 
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
-    // You can add auth tokens here if using token-based auth
+    // Add auth token to requests if available
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
     return config;
   },
   (error) => {
@@ -27,6 +33,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       // Handle unauthorized access
       if (typeof window !== 'undefined') {
+        localStorage.removeItem('auth_token');
         window.location.href = '/login';
       }
     }

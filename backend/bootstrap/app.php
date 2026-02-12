@@ -12,9 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-    $middleware->api(prepend: [
-        \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-    ]);
+    // Removed EnsureFrontendRequestsAreStateful since we're using token-based auth
+    // $middleware->api(prepend: [
+    //     \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+    // ]);
 
     $middleware->alias([
         'cors' => \Illuminate\Http\Middleware\HandleCors::class,

@@ -10,6 +10,24 @@ use Illuminate\Support\Facades\URL;
 
 class VerifyEmailCustom extends VerifyEmail
 {
+    /*  protected function verificationUrl($notifiable)
+     {
+         $signedUrl = URL::temporarySignedRoute(
+             'verification.verify',
+             now()->addMinutes(
+                 config('auth.verification.expire', 60)
+             ),
+             [
+                 'id' => $notifiable->getKey(),
+                 'hash' => sha1($notifiable->getEmailForVerification()),
+             ]
+         );
+
+         $query = parse_url($signedUrl, PHP_URL_QUERY);
+
+         return config('app.frontend_url') . '/verify-email?' . $query;
+     }
+  */
     protected function verificationUrl($notifiable)
     {
         $signedUrl = URL::temporarySignedRoute(
@@ -23,9 +41,14 @@ class VerifyEmailCustom extends VerifyEmail
             ]
         );
 
-        $query = parse_url($signedUrl, PHP_URL_QUERY);
+        $parsed = parse_url($signedUrl);
 
-        return config('app.frontend_url') . '/verify-email?' . $query;
+        $pathSegments = explode('/', trim($parsed['path'], '/'));
+        $id = $pathSegments[count($pathSegments) - 2];
+        $hash = $pathSegments[count($pathSegments) - 1];
+
+        return config('app.frontend_url')
+            . "/verify-email?id={$id}&hash={$hash}&{$parsed['query']}";
     }
 
 
