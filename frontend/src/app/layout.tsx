@@ -53,11 +53,11 @@ export default function RootLayout({
           <main className="flex-1">{children}</main>
 
           {/* Footer */}
-          <footer className="border-t border-default bg-surface transition-theme">
+          {/* <footer className="border-t border-default bg-surface transition-theme">
             <div className="max-w-6xl mx-auto px-6 py-6 text-sm text-text-muted text-center">
               © {new Date().getFullYear()} EduBridgeLearn. Built for curious minds.
             </div>
-          </footer>
+          </footer> */}
         </div>
       </body>
     </html>
