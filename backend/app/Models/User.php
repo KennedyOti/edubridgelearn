@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\ResetPasswordCustom;
 use App\Notifications\VerifyEmailCustom;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -45,13 +46,31 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->approved_at !== null || $this->role === 'student';  // Students auto-approved after verify
     }
 
-    public function isStudent(): bool { return $this->role === 'student'; }
-    public function isTutor(): bool { return $this->role === 'tutor'; }
-    public function isContributor(): bool { return $this->role === 'contributor'; }
-    public function isAdmin(): bool { return $this->role === 'admin'; }
+    public function isStudent(): bool
+    {
+        return $this->role === 'student';
+    }
+    public function isTutor(): bool
+    {
+        return $this->role === 'tutor';
+    }
+    public function isContributor(): bool
+    {
+        return $this->role === 'contributor';
+    }
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
 
     public function sendEmailVerificationNotification()
-{
-    $this->notify(new VerifyEmailCustom());
-}
+    {
+        $this->notify(new VerifyEmailCustom());
+    }
+
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new ResetPasswordCustom($token));
+    }
+
 }

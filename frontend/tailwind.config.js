@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: "class", 
+  darkMode: "class",
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -9,39 +9,49 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: {
-          DEFAULT: "#2563EB",
-          dark: "#3B82F6",
+        brand: {
+          50: "#EEF4FF",
+          100: "#D9E6FF",
+          200: "#B3CCFF",
+          300: "#80A9FF",
+          400: "#4D85FF",
+          500: "#2563EB", // Main brand
+          600: "#1E4ED8",
+          700: "#1B3FAF",
+          800: "#162F85",
+          900: "#0F1F5C",
         },
-        accent: {
-          DEFAULT: "#FACC15",
-          dark: "#FDE047",
+
+        academic: {
+          DEFAULT: "#0EA5E9", // Bright learning blue
         },
-        secondary: {
-          DEFAULT: "#22C55E",
-          dark: "#4ADE80",
+
+        success: {
+          DEFAULT: "#16A34A",
         },
-        background: {
-          light: "#F8FAFC",
-          dark: "#020617",
+
+        warning: {
+          DEFAULT: "#F59E0B",
         },
-        surface: {
-          light: "#FFFFFF",
-          dark: "#020617",
+
+        danger: {
+          DEFAULT: "#DC2626",
         },
-        text: {
-          light: "#0F172A",
-          dark: "#E5E7EB",
-          muted: "#475569",
-          mutedDark: "#94A3B8",
+
+        neutral: {
+          50: "#F8FAFC",
+          100: "#F1F5F9",
+          200: "#E2E8F0",
+          300: "#CBD5E1",
+          400: "#94A3B8",
+          500: "#64748B",
+          600: "#475569",
+          700: "#334155",
+          800: "#1E293B",
+          900: "#0F172A",
         },
-        border: {
-          light: "#E2E8F0",
-          dark: "#1E293B",
-        },
-        danger: "#EF4444",
       },
     },
   },
   plugins: [],
-}
+};

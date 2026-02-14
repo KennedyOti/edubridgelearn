@@ -2,182 +2,147 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =========================
+   DESIGN TOKENS
+========================= */
+
 @layer base {
   :root {
-    --bg: theme(colors.background.light);
-    --surface: theme(colors.surface.light);
-    --text: theme(colors.text.light);
-    --text-muted: theme(colors.text.muted);
-    --border: theme(colors.border.light);
+    --color-bg: theme(colors.neutral.50);
+    --color-surface: #ffffff;
+    --color-border: theme(colors.neutral.200);
+
+    --color-text: theme(colors.neutral.900);
+    --color-text-muted: theme(colors.neutral.600);
+
+    --color-brand: theme(colors.brand.500);
+    --color-brand-hover: theme(colors.brand.600);
   }
 
   .dark {
-    --bg: theme(colors.background.dark);
-    --surface: theme(colors.surface.dark);
-    --text: theme(colors.text.dark);
-    --text-muted: theme(colors.text.mutedDark);
-    --border: theme(colors.border.dark);
+    --color-bg: theme(colors.neutral.900);
+    --color-surface: theme(colors.neutral.800);
+    --color-border: theme(colors.neutral.700);
+
+    --color-text: theme(colors.neutral.100);
+    --color-text-muted: theme(colors.neutral.400);
+
+    --color-brand: theme(colors.brand.400);
+    --color-brand-hover: theme(colors.brand.300);
+  }
+
+  html {
+    font-size: 14px;
+    scroll-behavior: smooth;
   }
 
   body {
-    @apply bg-[var(--bg)] text-[var(--text)] antialiased;
+    @apply bg-[var(--color-bg)] text-[var(--color-text)] antialiased;
   }
 
   h1 {
-    @apply text-4xl font-extrabold text-primary;
+    @apply text-4xl font-bold tracking-tight;
   }
 
   h2 {
-    @apply text-2xl font-bold text-primary;
+    @apply text-3xl font-semibold;
   }
 
   h3 {
-    @apply text-xl font-semibold text-primary;
+    @apply text-xl font-semibold;
   }
 
   p {
-    @apply text-[var(--text-muted)] leading-relaxed;
+    @apply text-[var(--color-text-muted)] leading-relaxed;
   }
 }
+
+/* =========================
+   COMPONENTS
+========================= */
 
 @layer components {
+
+  /* Buttons */
+
   .btn {
-    @apply inline-flex items-center justify-center rounded-lg px-5 py-2.5 font-semibold transition-colors;
+    @apply inline-flex items-center justify-center
+           rounded-xl px-5 py-2.5
+           text-sm font-semibold
+           transition-all duration-200
+           focus:outline-none;
   }
 
-  .btn-primary {
-    @apply btn bg-primary text-white hover:bg-primary-dark dark:bg-primary dark:hover:bg-primary-dark;
+  .btn-brand {
+    @apply btn bg-[var(--color-brand)] text-white
+           hover:bg-[var(--color-brand-hover)];
   }
 
-  .btn-accent {
-    @apply btn bg-accent text-black hover:opacity-90 dark:bg-accent dark:text-black;
+  .btn-academic {
+    @apply btn bg-academic text-white hover:opacity-90;
   }
 
-  .btn-secondary {
-    @apply btn bg-secondary text-white hover:opacity-90 dark:bg-secondary dark:hover:opacity-90;
+  .btn-success {
+    @apply btn bg-success text-white hover:opacity-90;
   }
+
+  .btn-outline {
+    @apply btn border border-[var(--color-border)]
+           bg-transparent text-[var(--color-text)]
+           hover:bg-neutral-100 dark:hover:bg-neutral-700;
+  }
+
+  /* Cards */
 
   .card {
-    @apply rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm;
+    @apply rounded-2xl
+           border border-[var(--color-border)]
+           bg-[var(--color-surface)]
+           p-6 shadow-sm;
+  }
+
+  .card-hover {
+    @apply transition-all duration-200 hover:shadow-md hover:-translate-y-1;
+  }
+
+  /* Inputs */
+
+  .input {
+    @apply w-full rounded-lg border
+           border-[var(--color-border)]
+           bg-[var(--color-surface)]
+           px-4 py-2 text-sm
+           focus:outline-none;
+  }
+
+  .label {
+    @apply mb-1 block text-sm font-medium text-[var(--color-text)];
   }
 }
 
-/* Custom scrollbar */
+/* =========================
+   UTILITIES
+========================= */
+
 @layer utilities {
-  .scrollbar-thin {
-    scrollbar-width: thin;
+
+  .text-muted {
+    color: var(--color-text-muted);
   }
 
-  .scrollbar-thin::-webkit-scrollbar {
-    @apply w-2;
+  .bg-surface {
+    background-color: var(--color-surface);
   }
 
-  .scrollbar-thin::-webkit-scrollbar-track {
-    @apply bg-transparent;
+  .border-default {
+    border-color: var(--color-border);
   }
 
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    @apply bg-[var(--border)] rounded-full;
+  .gradient-brand {
+    @apply bg-gradient-to-r from-brand-500 to-academic;
   }
 
-  /* Smooth transitions */
-  * {
-    @apply transition-colors duration-200;
-  }
-
-  /* Form autofill styles */
-  input:-webkit-autofill,
-  input:-webkit-autofill:hover,
-  input:-webkit-autofill:focus {
-    -webkit-text-fill-color: var(--text);
-    -webkit-box-shadow: 0 0 0px 1000px var(--surface) inset;
-    transition: background-color 5000s ease-in-out 0s;
-  }
-
-  /* Selection */
-  ::selection {
-    @apply bg-primary/30;
-  }
-
-  /* Hide number input arrows */
-  input[type="number"]::-webkit-inner-spin-button,
-  input[type="number"]::-webkit-outer-spin-button {
-    @apply appearance-none m-0;
-  }
-
-  .animate-slideDown {
-    animation: slideDown 0.3s ease-out;
-  }
-  
-  .animate-slideUp {
-    animation: slideUp 0.3s ease-out;
-  }
-  
-  .animate-fadeIn {
-    animation: fadeIn 0.3s ease-out;
-  }
-
-  /* Glass effect */
-  .glass {
-    @apply backdrop-blur-md bg-white/10 dark:bg-black/10 border border-white/20 dark:border-black/20;
-  }
-
-  /* Gradient text */
-  .gradient-text {
-    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
-  }
-
-  /* Hover lift effect */
   .hover-lift {
-    @apply transition-transform duration-200 hover:-translate-y-0.5;
-  }
-
-  /* Pulse glow */
-  .pulse-glow {
-    animation: pulseGlow 2s infinite;
-  }
-}
-
-
-/* Add to your existing global.css */
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-
-@keyframes pulseGlow {
-  0%, 100% {
-    box-shadow: 0 0 0 0 theme('colors.primary.DEFAULT / 20%');
-  }
-  50% {
-    box-shadow: 0 0 20px 0 theme('colors.primary.DEFAULT / 30%');
+    @apply transition-transform duration-200 hover:-translate-y-1;
   }
 }
