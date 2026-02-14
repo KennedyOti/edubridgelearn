@@ -8,8 +8,6 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { resetPasswordSchema } from "@/lib/validators/auth.schema";
 
-
-
 type FormData = z.infer<typeof resetPasswordSchema>;
 
 export default function ResetPasswordPage() {
@@ -43,31 +41,21 @@ export default function ResetPasswordPage() {
       });
 
       setSuccessMessage("Your password has been updated successfully! 🚀");
-      setTimeout(() => {
-        router.push("/login");
-      }, 2000); // redirect after 2s
+      setTimeout(() => router.push("/login"), 2000);
     } catch (err: any) {
       setServerError(
-        err.response?.data?.message || "Something went wrong. Even servers have off days."
+        err.response?.data?.message ||
+        "Something went wrong. Even servers have off days."
       );
     }
   };
 
   return (
-    <div className="w-full max-w-md mx-auto">
+    <div className="w-full max-w-md mx-auto px-4 sm:px-6">
       <h1 className="text-2xl font-bold text-center">Choose a New Password 🔑</h1>
 
-      {serverError && (
-        <div className="text-sm text-danger bg-danger/10 border border-danger/20 p-3 rounded-lg mt-4">
-          {serverError}
-        </div>
-      )}
-
-      {successMessage && (
-        <div className="text-sm text-green-700 bg-green-100 border border-green-200 p-3 rounded-lg mt-4">
-          {successMessage}
-        </div>
-      )}
+      {serverError && <div className="alert alert-danger mt-4">{serverError}</div>}
+      {successMessage && <div className="alert alert-success mt-4">{successMessage}</div>}
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5">
         <div>
@@ -78,9 +66,7 @@ export default function ResetPasswordPage() {
             className={`input ${errors.password ? "border-danger focus:ring-danger/40" : ""}`}
             {...register("password")}
           />
-          {errors.password && (
-            <p className="text-danger text-sm mt-1">{errors.password.message}</p>
-          )}
+          {errors.password && <p className="text-danger text-sm mt-1">{errors.password.message}</p>}
         </div>
 
         <div>
@@ -88,22 +74,18 @@ export default function ResetPasswordPage() {
           <input
             type="password"
             placeholder="Confirm your password"
-            className={`input ${
-              errors.password_confirmation ? "border-danger focus:ring-danger/40" : ""
-            }`}
+            className={`input ${errors.password_confirmation ? "border-danger focus:ring-danger/40" : ""}`}
             {...register("password_confirmation")}
           />
           {errors.password_confirmation && (
-            <p className="text-danger text-sm mt-1">
-              {errors.password_confirmation.message}
-            </p>
+            <p className="text-danger text-sm mt-1">{errors.password_confirmation.message}</p>
           )}
         </div>
 
         <button
           type="submit"
           disabled={isSubmitting}
-          className="btn-brand w-full flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+          className="btn btn-brand w-full flex justify-center items-center gap-2 disabled:opacity-60"
         >
           {isSubmitting ? "Updating your universe..." : "Update Password 🔑"}
         </button>

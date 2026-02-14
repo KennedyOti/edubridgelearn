@@ -5,30 +5,34 @@
 /* =========================
    DESIGN TOKENS
 ========================= */
-
 @layer base {
   :root {
-    --color-bg: theme(colors.neutral.50);
-    --color-surface: #ffffff;
-    --color-border: theme(colors.neutral.200);
+    --color-bg: #F8FAFC; /* neutral.50 */
+    --color-surface: #FFFFFF;
+    --color-border: #E2E8F0; /* neutral.200 */
 
-    --color-text: theme(colors.neutral.900);
-    --color-text-muted: theme(colors.neutral.600);
+    --color-text: #0F172A; /* neutral.900 */
+    --color-text-muted: #64748B; /* neutral.500 */
 
-    --color-brand: theme(colors.brand.500);
-    --color-brand-hover: theme(colors.brand.600);
+    --color-brand: #2563EB; /* brand.500 */
+    --color-brand-hover: #1E4ED8; /* brand.600 */
+
+    --color-academic: #0EA5E9;
+    --color-success: #16A34A;
+    --color-warning: #F59E0B;
+    --color-danger: #DC2626;
   }
 
   .dark {
-    --color-bg: theme(colors.neutral.900);
-    --color-surface: theme(colors.neutral.800);
-    --color-border: theme(colors.neutral.700);
+    --color-bg: #0F172A; /* neutral.900 */
+    --color-surface: #1E293B; /* neutral.800 */
+    --color-border: #334155; /* neutral.700 */
 
-    --color-text: theme(colors.neutral.100);
-    --color-text-muted: theme(colors.neutral.400);
+    --color-text: #F8FAFC; /* neutral.50 */
+    --color-text-muted: #94A3B8; /* neutral.400 */
 
-    --color-brand: theme(colors.brand.400);
-    --color-brand-hover: theme(colors.brand.300);
+    --color-brand: #4D85FF; /* brand.400 */
+    --color-brand-hover: #80A9FF; /* brand.300 */
   }
 
   html {
@@ -37,112 +41,128 @@
   }
 
   body {
-    @apply bg-[var(--color-bg)] text-[var(--color-text)] antialiased;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    @apply antialiased transition-colors duration-300;
   }
 
-  h1 {
-    @apply text-4xl font-bold tracking-tight;
-  }
+  h1 { @apply text-4xl font-bold tracking-tight; }
+  h2 { @apply text-3xl font-semibold; }
+  h3 { @apply text-xl font-semibold; }
+  p  { color: var(--color-text-muted); line-height: 1.6; }
 
-  h2 {
-    @apply text-3xl font-semibold;
+  a {
+    color: var(--color-brand);
+    transition: color 0.2s;
   }
-
-  h3 {
-    @apply text-xl font-semibold;
-  }
-
-  p {
-    @apply text-[var(--color-text-muted)] leading-relaxed;
-  }
+  a:hover { color: var(--color-brand-hover); }
 }
 
 /* =========================
    COMPONENTS
 ========================= */
-
 @layer components {
-
   /* Buttons */
-
   .btn {
-    @apply inline-flex items-center justify-center
-           rounded-xl px-5 py-2.5
-           text-sm font-semibold
-           transition-all duration-200
-           focus:outline-none;
+    @apply inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200;
   }
 
   .btn-brand {
-    @apply btn bg-[var(--color-brand)] text-white
-           hover:bg-[var(--color-brand-hover)];
+    @apply text-white;
+    background-color: var(--color-brand);
   }
+  .btn-brand:hover { background-color: var(--color-brand-hover); }
 
   .btn-academic {
-    @apply btn bg-academic text-white hover:opacity-90;
+    @apply text-white;
+    background-color: var(--color-academic);
   }
+  .btn-academic:hover { opacity: 0.9; }
 
-  .btn-success {
-    @apply btn bg-success text-white hover:opacity-90;
-  }
+  .btn-success { @apply text-white; background-color: var(--color-success); }
+  .btn-warning { @apply text-white; background-color: var(--color-warning); }
+  .btn-danger  { @apply text-white; background-color: var(--color-danger); }
 
   .btn-outline {
-    @apply btn border border-[var(--color-border)]
-           bg-transparent text-[var(--color-text)]
-           hover:bg-neutral-100 dark:hover:bg-neutral-700;
+    @apply border bg-transparent;
+    border-color: var(--color-border);
+    color: var(--color-text);
   }
-
-  /* Cards */
-
-  .card {
-    @apply rounded-2xl
-           border border-[var(--color-border)]
-           bg-[var(--color-surface)]
-           p-6 shadow-sm;
+  .btn-outline:hover {
+    background-color: #F1F5F9; /* neutral.100 fallback */
   }
-
-  .card-hover {
-    @apply transition-all duration-200 hover:shadow-md hover:-translate-y-1;
+  .dark .btn-outline:hover {
+    background-color: #334155; /* neutral.700 fallback */
   }
 
   /* Inputs */
-
   .input {
-    @apply w-full rounded-lg border
-           border-[var(--color-border)]
-           bg-[var(--color-surface)]
-           px-4 py-2 text-sm
-           focus:outline-none;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    font-size: 0.875rem;
+    transition: all 0.2s;
+  }
+  .input::placeholder { color: var(--color-text-muted); }
+  .input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25); /* brand.500 with 25% opacity */
   }
 
   .label {
-    @apply mb-1 block text-sm font-medium text-[var(--color-text)];
+    @apply mb-1 block text-sm font-medium;
+    color: var(--color-text);
+  }
+
+  /* Cards */
+  .card {
+    @apply rounded-2xl border p-6 shadow-sm transition-shadow duration-200;
+    border-color: var(--color-border);
+    background-color: var(--color-surface);
+  }
+  .card-hover {
+    @apply hover:shadow-md hover:-translate-y-1;
+  }
+
+  /* Alerts */
+  .alert { @apply rounded-lg px-4 py-3 text-sm font-medium; }
+  .alert-success {
+    border: 1px solid var(--color-success);
+    background-color: rgba(22, 163, 74, 0.1);
+    color: var(--color-success);
+  }
+  .alert-warning {
+    border: 1px solid var(--color-warning);
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--color-warning);
+  }
+  .alert-danger {
+    border: 1px solid var(--color-danger);
+    background-color: rgba(220, 38, 38, 0.1);
+    color: var(--color-danger);
   }
 }
 
 /* =========================
    UTILITIES
 ========================= */
-
 @layer utilities {
-
-  .text-muted {
-    color: var(--color-text-muted);
-  }
-
-  .bg-surface {
-    background-color: var(--color-surface);
-  }
-
-  .border-default {
-    border-color: var(--color-border);
-  }
+  .text-muted { color: var(--color-text-muted); }
+  .bg-surface { background-color: var(--color-surface); }
+  .border-default { border-color: var(--color-border); }
 
   .gradient-brand {
-    @apply bg-gradient-to-r from-brand-500 to-academic;
+    background-image: linear-gradient(to right, var(--color-brand), var(--color-academic));
   }
 
   .hover-lift {
     @apply transition-transform duration-200 hover:-translate-y-1;
+  }
+
+  .transition-theme {
+    @apply transition-colors duration-300;
   }
 }

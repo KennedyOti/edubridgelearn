@@ -13,7 +13,8 @@ type FormData = z.infer<typeof registerSchema>;
 
 export default function RegisterForm() {
   const [serverError, setServerError] = useState("");
-  const [emailSent, setEmailSent] = useState(false); // New state
+  const [emailSent, setEmailSent] = useState(false);
+  const [step, setStep] = useState<1 | 2>(1); // Two-step: 1 = role, 2 = details
 
   const {
     register,
@@ -28,37 +29,40 @@ export default function RegisterForm() {
 
   const selectedRole = watch("role");
 
+  const nextStep = () => {
+    if (!selectedRole) return;
+    setStep(2);
+  };
+
   const onSubmit = async (data: FormData) => {
     setServerError("");
 
     try {
       await authService.register(data);
-      // Instead of immediate push, show a confirmation message
       setEmailSent(true);
     } catch (err: any) {
       setServerError(
-        err.response?.data?.message ||
-          "Something unexpected happened. Even servers have moods."
+        err.response?.data?.message || "Something unexpected happened. Even servers have moods."
       );
     }
   };
 
-  // If email sent, show confirmation instead of form
+  // Email sent confirmation
   if (emailSent) {
     return (
-      <div className="text-center space-y-6 p-6 bg-white dark:bg-surface rounded-xl shadow-md">
-        <h2 className="text-2xl font-bold gradient-text">Almost There! 🚀</h2>
-        <p className="text-gray-500">
+      <div className="text-center space-y-6 p-6 bg-surface dark:bg-surface rounded-2xl shadow-sm transition-theme">
+        <h2 className="text-2xl font-bold gradient-brand">Almost There! 🚀</h2>
+        <p className="text-text-muted">
           We’ve sent a verification link to your email. 📬 <br />
           Click it to activate your account and start your learning adventure.
         </p>
-        <p className="text-sm text-gray-400">
-          Didn’t get the email? Check your spam folder or{" "}
+        <p className="text-sm text-text-muted">
+          Didn’t get the email?{" "}
           <Link
             href="/auth/verify-email/resend"
-            className="text-indigo-600 hover:underline"
+            className="text-brand hover:underline"
           >
-            resend the verification link
+            Resend the verification link
           </Link>
           .
         </p>
@@ -68,115 +72,128 @@ export default function RegisterForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold gradient-text">
-          Join EduBridgeLearn 🚀
-        </h2>
-        <p className="text-sm text-gray-500">
-          Pick your role. Shape your journey. No pressure. Greatness loads gradually.
-        </p>
-      </div>
+      {/* Step 1: Role Selection */}
+      {step === 1 && (
+        <div className="space-y-4 text-center">
+          <h2 className="text-2xl font-bold gradient-brand">
+            Pick Your Role 🎯
+          </h2>
+          <p className="text-text-muted text-sm">
+            Your learning journey starts here. Choose wisely!
+          </p>
 
-      {serverError && (
-        <div className="text-sm text-danger bg-danger/10 border border-danger/20 p-3 rounded-lg">
-          {serverError}
+          <RoleSelector
+            value={selectedRole || ""}
+            onChange={(role) => setValue("role", role, { shouldValidate: true })}
+          />
+          {errors.role && (
+            <p className="text-danger text-sm mt-2">{errors.role.message}</p>
+          )}
+
+          <button
+            type="button"
+            onClick={nextStep}
+            disabled={!selectedRole}
+            className="btn btn-brand w-full mt-4 disabled:opacity-60"
+          >
+            Next ➡️
+          </button>
         </div>
       )}
 
-      {/* Name */}
-      <div>
-        <label className="label">What should we call you? 👀</label>
-        <input
-          {...register("name")}
-          className={`input ${errors.name ? "border-danger focus:ring-danger/40" : ""}`}
-          placeholder="Future Legend..."
-        />
-        {errors.name && (
-          <p className="text-danger text-sm mt-1">{errors.name.message}</p>
-        )}
-      </div>
+      {/* Step 2: Registration Details */}
+      {step === 2 && (
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold gradient-brand text-center">
+            Fill Your Details ✨
+          </h2>
 
-      {/* Email */}
-      <div>
-        <label className="label">Your academic email 📬</label>
-        <input
-          type="email"
-          {...register("email")}
-          className={`input ${errors.email ? "border-danger focus:ring-danger/40" : ""}`}
-          placeholder="genius@example.com"
-        />
-        {errors.email && (
-          <p className="text-danger text-sm mt-1">{errors.email.message}</p>
-        )}
-      </div>
+          {serverError && (
+            <div className="alert alert-danger text-sm">{serverError}</div>
+          )}
 
-      {/* Role Selector */}
-      <div>
-        <RoleSelector
-          value={selectedRole || ""}
-          onChange={(role) => setValue("role", role, { shouldValidate: true })}
-        />
-        {errors.role && (
-          <p className="text-danger text-sm mt-2">{errors.role.message}</p>
-        )}
-      </div>
+          {/* Name */}
+          <div>
+            <label className="label">Your Name 👀</label>
+            <input
+              {...register("name")}
+              className={`input ${errors.name ? "border-danger focus:ring-danger/40" : ""}`}
+              placeholder="Future Legend..."
+            />
+            {errors.name && (
+              <p className="text-danger text-sm mt-1">{errors.name.message}</p>
+            )}
+          </div>
 
-      {/* Password */}
-      <div>
-        <label className="label">Secret knowledge key 🔐</label>
-        <input
-          type="password"
-          {...register("password")}
-          className={`input ${errors.password ? "border-danger focus:ring-danger/40" : ""}`}
-          placeholder="Minimum 8 characters"
-        />
-        {errors.password && (
-          <p className="text-danger text-sm mt-1">{errors.password.message}</p>
-        )}
-      </div>
+          {/* Email */}
+          <div>
+            <label className="label">Email 📬</label>
+            <input
+              type="email"
+              {...register("email")}
+              className={`input ${errors.email ? "border-danger focus:ring-danger/40" : ""}`}
+              placeholder="genius@example.com"
+            />
+            {errors.email && (
+              <p className="text-danger text-sm mt-1">{errors.email.message}</p>
+            )}
+          </div>
 
-      {/* Confirm Password */}
-      <div>
-        <label className="label">Confirm the magic spell ✨</label>
-        <input
-          type="password"
-          {...register("password_confirmation")}
-          className={`input ${errors.password_confirmation ? "border-danger focus:ring-danger/40" : ""}`}
-          placeholder="Repeat it carefully..."
-        />
-        {errors.password_confirmation && (
-          <p className="text-danger text-sm mt-1">
-            {errors.password_confirmation.message}
+          {/* Password */}
+          <div>
+            <label className="label">Password 🔐</label>
+            <input
+              type="password"
+              {...register("password")}
+              className={`input ${errors.password ? "border-danger focus:ring-danger/40" : ""}`}
+              placeholder="Minimum 8 characters"
+            />
+            {errors.password && (
+              <p className="text-danger text-sm mt-1">{errors.password.message}</p>
+            )}
+          </div>
+
+          {/* Confirm Password */}
+          <div>
+            <label className="label">Confirm Password ✨</label>
+            <input
+              type="password"
+              {...register("password_confirmation")}
+              className={`input ${errors.password_confirmation ? "border-danger focus:ring-danger/40" : ""}`}
+              placeholder="Repeat it carefully..."
+            />
+            {errors.password_confirmation && (
+              <p className="text-danger text-sm mt-1">{errors.password_confirmation.message}</p>
+            )}
+          </div>
+
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="btn btn-brand w-full flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? (
+              <>
+                <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                Creating your universe...
+              </>
+            ) : (
+              "Create My Account 🎓"
+            )}
+          </button>
+
+          <p className="text-sm text-center text-text-muted">
+            Already part of the ecosystem?{" "}
+            <Link
+              href="/auth/login"
+              className="text-brand font-medium hover:underline"
+            >
+              Log in
+            </Link>
           </p>
-        )}
-      </div>
-
-      {/* Submit */}
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="btn-brand w-full flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
-      >
-        {isSubmitting ? (
-          <>
-            <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-            Creating your universe...
-          </>
-        ) : (
-          "Create My Account 🎓"
-        )}
-      </button>
-
-      <p className="text-sm text-center text-gray-500">
-        Already part of the ecosystem?{" "}
-        <Link
-          href="/auth/login"
-          className="text-brand font-medium hover:underline"
-        >
-          Log in
-        </Link>
-      </p>
+        </div>
+      )}
     </form>
   );
 }

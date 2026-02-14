@@ -10,9 +10,7 @@ export default function VerifyEmailPage() {
   const hash = searchParams.get("hash");
   const query = searchParams.toString();
 
-  const [status, setStatus] = useState<"loading" | "success" | "error">(
-    "loading"
-  );
+  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [message, setMessage] = useState<string>("Verifying your magic... ✨");
 
   useEffect(() => {
@@ -29,9 +27,7 @@ export default function VerifyEmailPage() {
         setMessage(res.data.message || "Email verified successfully! 🚀");
       } catch (err: any) {
         setStatus("error");
-        setMessage(
-          err.response?.data?.message || "Verification failed. Try again!"
-        );
+        setMessage(err.response?.data?.message || "Verification failed. Try again!");
       }
     };
 
@@ -39,15 +35,15 @@ export default function VerifyEmailPage() {
   }, [id, hash, query]);
 
   return (
-    <div className="w-full max-w-md mx-auto mt-16 p-6 bg-white dark:bg-surface rounded-xl shadow-md text-center space-y-6">
-      <h1 className="text-3xl font-bold gradient-text">
+    <div className="w-full max-w-md mx-auto mt-16 p-6 bg-surface dark:bg-surface rounded-2xl shadow-sm text-center space-y-6 transition-theme">
+      <h1 className="text-3xl font-bold gradient-brand">
         {status === "loading"
           ? "Hold tight... ⏳"
           : status === "success"
           ? "Success! 🎉"
           : "Oops! ❌"}
       </h1>
-      <p className="text-gray-500 text-sm">{message}</p>
+      <p className="text-text-muted text-sm">{message}</p>
     </div>
   );
 }
