@@ -40,7 +40,7 @@ export default function RootLayout({
                   href="/register"
                   className="btn btn-brand"
                 >
-                  Join the Adventure
+                  Join Us
                 </a>
 
                 {/* Theme Toggle */}

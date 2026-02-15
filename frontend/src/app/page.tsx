@@ -34,21 +34,21 @@ export default function HomePage() {
       <div className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10 text-left">
         
         <div className="card card-hover">
-          <h3 className="font-bold text-lg mb-3">🎓 Students</h3>
+          <h3 className="font-bold text-lg mb-3">Students</h3>
           <p className="text-text-muted text-sm">
             Discover lessons, ask questions, and unlock knowledge at your pace.
           </p>
         </div>
 
         <div className="card card-hover">
-          <h3 className="font-bold text-lg mb-3">🧑‍🏫 Tutors</h3>
+          <h3 className="font-bold text-lg mb-3">Tutors</h3>
           <p className="text-text-muted text-sm">
             Share expertise, guide learners, and grow your teaching presence.
           </p>
         </div>
 
         <div className="card card-hover">
-          <h3 className="font-bold text-lg mb-3">📚 Contributors</h3>
+          <h3 className="font-bold text-lg mb-3">Contributors</h3>
           <p className="text-text-muted text-sm">
             Create valuable educational content and shape the learning ecosystem.
           </p>

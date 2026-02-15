@@ -78,12 +78,12 @@ export default function RegisterForm() {
         </div>
         
         <h2 className="text-3xl font-bold gradient-brand animate-gradient">
-          Almost There! 🚀
+          Almost There!
         </h2>
         
         <div className="space-y-4 text-text-muted">
           <p className="text-lg">
-            We&apos;ve sent a verification link to your email. 📬
+            We&apos;ve sent a verification link to your email. 
           </p>
           <p>
             Click it to activate your account and start your learning adventure.
@@ -94,7 +94,7 @@ export default function RegisterForm() {
           <p className="text-sm text-text-muted">
             Didn&apos;t get the email?{" "}
             <Link
-              href="/auth/verify-email/resend"
+              href="/auth/verify-email/resend-verification-email"
               className="text-brand hover:text-brand-hover font-medium transition-all hover:underline"
             >
               Resend verification link
@@ -119,7 +119,7 @@ export default function RegisterForm() {
           >
             <div className="text-center space-y-2">
               <h2 className="text-3xl font-bold gradient-brand animate-gradient">
-                Pick Your Role 🎯
+                Pick Your Role
               </h2>
             </div>
 

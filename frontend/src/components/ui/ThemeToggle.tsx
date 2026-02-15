@@ -27,7 +27,7 @@ export default function ThemeToggle() {
       className="ml-4 p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 transition"
       title="Toggle dark mode"
     >
-      {theme === "light" ? "🌙 Dark" : "☀️ Light"}
+      {theme === "light" ? " Dark" : " Light"}
     </button>
   );
 }

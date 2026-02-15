@@ -40,7 +40,7 @@ export default function ResetPasswordPage() {
         password_confirmation: data.password_confirmation,
       });
 
-      setSuccessMessage("Your password has been updated successfully! 🚀");
+      setSuccessMessage("Your password has been updated successfully! ");
       setTimeout(() => router.push("/login"), 2000);
     } catch (err: any) {
       setServerError(
@@ -52,14 +52,14 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="w-full max-w-md mx-auto px-4 sm:px-6">
-      <h1 className="text-2xl font-bold text-center">Choose a New Password 🔑</h1>
+      <h1 className="text-2xl font-bold text-center">Choose a New Password </h1>
 
       {serverError && <div className="alert alert-danger mt-4">{serverError}</div>}
       {successMessage && <div className="alert alert-success mt-4">{successMessage}</div>}
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5">
         <div>
-          <label className="label">New Password 🔐</label>
+          <label className="label">New Password </label>
           <input
             type="password"
             placeholder="Enter your new secure password"
@@ -70,7 +70,7 @@ export default function ResetPasswordPage() {
         </div>
 
         <div>
-          <label className="label">Confirm Password ✨</label>
+          <label className="label">Confirm Password </label>
           <input
             type="password"
             placeholder="Confirm your password"
@@ -87,7 +87,7 @@ export default function ResetPasswordPage() {
           disabled={isSubmitting}
           className="btn btn-brand w-full flex justify-center items-center gap-2 disabled:opacity-60"
         >
-          {isSubmitting ? "Updating your universe..." : "Update Password 🔑"}
+          {isSubmitting ? "Updating your universe..." : "Update Password "}
         </button>
       </form>
     </div>

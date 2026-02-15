@@ -11,12 +11,12 @@ export default function VerifyEmailPage() {
   const query = searchParams.toString();
 
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
-  const [message, setMessage] = useState<string>("Verifying your magic... ✨");
+  const [message, setMessage] = useState<string>("Verifying your magic... ");
 
   useEffect(() => {
     if (!id || !hash) {
       setStatus("error");
-      setMessage("Invalid verification link 😢");
+      setMessage("Invalid verification link ");
       return;
     }
 
@@ -24,7 +24,7 @@ export default function VerifyEmailPage() {
       try {
         const res = await authService.verifyEmail(id, hash, query);
         setStatus("success");
-        setMessage(res.data.message || "Email verified successfully! 🚀");
+        setMessage(res.data.message || "Email verified successfully! ");
       } catch (err: any) {
         setStatus("error");
         setMessage(err.response?.data?.message || "Verification failed. Try again!");
@@ -40,8 +40,8 @@ export default function VerifyEmailPage() {
         {status === "loading"
           ? "Hold tight... ⏳"
           : status === "success"
-          ? "Success! 🎉"
-          : "Oops! ❌"}
+          ? "Success!"
+          : "Oops! "}
       </h1>
       <p className="text-text-muted text-sm">{message}</p>
     </div>

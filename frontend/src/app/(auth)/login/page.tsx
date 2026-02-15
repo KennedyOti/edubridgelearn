@@ -47,7 +47,7 @@ export default function LoginPage() {
   return (
     <div className="w-full max-w-md mx-auto px-4 sm:px-6">
       <div className="text-center space-y-3">
-        <h1 className="text-3xl font-bold tracking-tight">Welcome Back 👋</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Welcome Back </h1>
         <p className="text-text-muted text-sm leading-relaxed">
           Log in and continue your learning quest.
         </p>
@@ -96,7 +96,7 @@ export default function LoginPage() {
           {isSubmitting ? (
             <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
           ) : null}
-          {isSubmitting ? "Opening your portal..." : "Enter the Portal 🚀"}
+          {isSubmitting ? "Opening your portal..." : "Enter the Portal"}
         </button>
       </form>
 
