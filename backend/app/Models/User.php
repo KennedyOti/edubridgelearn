@@ -43,7 +43,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function isApproved(): bool
     {
-        return $this->approved_at !== null || $this->role === 'student';  // Students auto-approved after verify
+        return $this->approved_at !== null || $this->role === 'student';
     }
 
     public function isStudent(): bool
