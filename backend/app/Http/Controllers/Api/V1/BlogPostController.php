@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\BlogPost;
 use App\Models\BlogView;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class BlogPostController extends Controller
 {
@@ -22,19 +21,19 @@ class BlogPostController extends Controller
             ->published();
 
         if ($request->filled('category')) {
-            $query->whereHas('category', fn ($q) =>
-                $q->where('slug', $request->category)
-            );
+            $query->whereHas('category', function ($q) use ($request) {
+                $q->where('slug', $request->category);
+            });
         }
 
         if ($request->filled('tag')) {
-            $query->whereHas('tags', fn ($q) =>
-                $q->where('slug', $request->tag)
-            );
+            $query->whereHas('tags', function ($q) use ($request) {
+                $q->where('slug', $request->tag);
+            });
         }
 
         if ($request->boolean('featured')) {
-            $query->featured();
+            $query->where('is_featured', true);
         }
 
         return response()->json(
@@ -54,7 +53,7 @@ class BlogPostController extends Controller
                 'author:id,name',
                 'category',
                 'tags',
-                'approvedComments.user'
+                'approvedComments.user:id,name'
             ])
             ->published()
             ->where('slug', $slug)
@@ -73,42 +72,53 @@ class BlogPostController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'title' => 'required|max:255',
-            'content' => 'required',
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
+            'excerpt' => 'nullable|string',
             'category_id' => 'required|exists:blog_categories,id',
             'tags' => 'nullable|array',
             'tags.*' => 'exists:blog_tags,id',
             'status' => 'nullable|in:draft,pending,published',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string',
+            'meta_keywords' => 'nullable|string',
+            'is_featured' => 'nullable|boolean',
+            'allow_comments' => 'nullable|boolean',
         ]);
 
-        $status = $request->status ?? 'draft';
+        $user = $request->user();
+        $status = $validated['status'] ?? 'draft';
 
-        // Contributors cannot publish directly
-        if ($request->user()->role !== 'admin' && $status === 'published') {
+        // Only admin can publish directly
+        if (!$user->isAdmin() && $status === 'published') {
             $status = 'pending';
         }
 
         $post = BlogPost::create([
-            'user_id' => $request->user()->id,
-            'category_id' => $request->category_id,
-            'title' => $request->title,
-            'content' => $request->validated()['content'],
-            'excerpt' => $request->excerpt,
-            'meta_title' => $request->meta_title,
-            'meta_description' => $request->meta_description,
-            'meta_keywords' => $request->meta_keywords,
+            'user_id' => $user->id,
+            'category_id' => $validated['category_id'],
+            'title' => $validated['title'],
+            'content' => $validated['content'],
+            'excerpt' => $validated['excerpt'] ?? null,
+            'meta_title' => $validated['meta_title'] ?? null,
+            'meta_description' => $validated['meta_description'] ?? null,
+            'meta_keywords' => $validated['meta_keywords'] ?? null,
             'status' => $status,
             'published_at' => $status === 'published' ? now() : null,
-            'is_featured' => $request->boolean('is_featured'),
-            'allow_comments' => $request->boolean('allow_comments', true),
+            'is_featured' => $user->isAdmin() ? ($validated['is_featured'] ?? false) : false,
+            'allow_comments' => $validated['allow_comments'] ?? true,
+            'views_count' => 0,
         ]);
 
-        if ($request->tags) {
-            $post->tags()->sync($request->tags);
+        if (!empty($validated['tags'])) {
+            $post->tags()->sync($validated['tags']);
         }
 
-        return response()->json($post->load('tags'), 201);
+        return response()->json(
+            $post->load(['author:id,name', 'category', 'tags']),
+            201
+        );
     }
 
     /*
@@ -120,33 +130,57 @@ class BlogPostController extends Controller
     public function update(Request $request, $id)
     {
         $post = BlogPost::findOrFail($id);
+        $user = $request->user();
 
-        if (
-            $request->user()->role !== 'admin' &&
-            $post->user_id !== $request->user()->id
-        ) {
+        if (!$user->isAdmin() && $post->user_id !== $user->id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $post->update($request->only([
-            'title',
-            'content',
-            'excerpt',
-            'category_id',
-            'status',
-            'is_featured',
-            'allow_comments',
-            'meta_title',
-            'meta_description',
-            'meta_keywords'
-        ]));
+        $validated = $request->validate([
+            'title' => 'sometimes|required|string|max:255',
+            'content' => 'sometimes|required|string',
+            'excerpt' => 'nullable|string',
+            'category_id' => 'sometimes|exists:blog_categories,id',
+            'tags' => 'nullable|array',
+            'tags.*' => 'exists:blog_tags,id',
+            'status' => 'nullable|in:draft,pending,published',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string',
+            'meta_keywords' => 'nullable|string',
+            'is_featured' => 'nullable|boolean',
+            'allow_comments' => 'nullable|boolean',
+        ]);
 
-        return response()->json($post);
+        // Handle status update safely
+        if (isset($validated['status'])) {
+            if (!$user->isAdmin() && $validated['status'] === 'published') {
+                $validated['status'] = 'pending';
+            }
+
+            if ($validated['status'] === 'published' && !$post->published_at) {
+                $validated['published_at'] = now();
+            }
+        }
+
+        // Only admin can change featured flag
+        if (!$user->isAdmin()) {
+            unset($validated['is_featured']);
+        }
+
+        $post->update($validated);
+
+        if (array_key_exists('tags', $validated)) {
+            $post->tags()->sync($validated['tags'] ?? []);
+        }
+
+        return response()->json(
+            $post->load(['author:id,name', 'category', 'tags'])
+        );
     }
 
     /*
     |--------------------------------------------------------------------------
-    | Delete Post
+    | Delete Post (Admin Only)
     |--------------------------------------------------------------------------
     */
 
@@ -154,13 +188,13 @@ class BlogPostController extends Controller
     {
         $post = BlogPost::findOrFail($id);
 
-        if ($request->user()->role !== 'admin') {
-            return response()->json(['message' => 'Only admin can delete'], 403);
+        if (!$request->user()->isAdmin()) {
+            return response()->json(['message' => 'Only admin can delete posts'], 403);
         }
 
         $post->delete();
 
-        return response()->json(['message' => 'Deleted']);
+        return response()->json(['message' => 'Post deleted successfully']);
     }
 
     /*

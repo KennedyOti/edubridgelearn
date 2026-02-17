@@ -35,6 +35,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::prefix('v1/blog')->group(function () {
 
+    // Public
     Route::get('/posts', [BlogPostController::class, 'index']);
     Route::get('/posts/{slug}', [BlogPostController::class, 'show']);
 
@@ -47,14 +48,33 @@ Route::prefix('v1/blog')->group(function () {
     Route::post('/comments', [BlogCommentController::class, 'store']);
 
     Route::middleware('auth:sanctum')->group(function () {
+
+        // Posts
         Route::post('/posts', [BlogPostController::class, 'store']);
         Route::put('/posts/{id}', [BlogPostController::class, 'update']);
         Route::delete('/posts/{id}', [BlogPostController::class, 'destroy']);
 
+        Route::patch('/posts/{id}/submit', [BlogPostController::class, 'submit']);
+        Route::patch('/posts/{id}/approve', [BlogPostController::class, 'approve']);
+        Route::patch('/posts/{id}/reject', [BlogPostController::class, 'reject']);
+        Route::patch('/posts/{id}/feature', [BlogPostController::class, 'feature']);
+
+        // Categories
+        Route::post('/categories', [BlogCategoryController::class, 'store']);
+        Route::put('/categories/{id}', [BlogCategoryController::class, 'update']);
+        Route::delete('/categories/{id}', [BlogCategoryController::class, 'destroy']);
+
+        // Tags
+        Route::post('/tags', [BlogTagController::class, 'store']);
+        Route::put('/tags/{id}', [BlogTagController::class, 'update']);
+        Route::delete('/tags/{id}', [BlogTagController::class, 'destroy']);
+
+        // Comments moderation
         Route::patch('/comments/{id}/approve', [BlogCommentController::class, 'approve']);
         Route::patch('/comments/{id}/reject', [BlogCommentController::class, 'reject']);
     });
 });
+
 
 
 
