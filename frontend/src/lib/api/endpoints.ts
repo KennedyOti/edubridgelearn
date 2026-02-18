@@ -1,15 +1,11 @@
-export const API_ENDPOINTS = {
-  AUTH: {
-    REGISTER: '/register',
-    LOGIN: '/login',
-    LOGOUT: '/logout',
-    USER: '/user',
-    FORGOT_PASSWORD: '/forgot-password',
-    RESET_PASSWORD: '/reset-password',
-    EMAIL_VERIFICATION: {
-      RESEND: '/email/resend',
-      VERIFY: (id: string, hash: string) => `/email/verify/${id}/${hash}`,
-      RESEND_UNAUTHENTICATED: '/email/resend-unauthenticated', 
-    },
-  },
-} as const;
+export const endpoints = {
+  register: "/register",
+  login: "/login",
+  logout: "/logout",
+  user: "/user",
+  verifyEmail: "/email/verify",
+  resendVerification: "/email/resend",
+  resendVerificationPublic: "/email/resend-unauthenticated",
+  forgotPassword: "/forgot-password",
+  resetPassword: "/reset-password",
+};

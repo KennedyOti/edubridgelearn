@@ -2,182 +2,167 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =========================
+   DESIGN TOKENS
+========================= */
 @layer base {
   :root {
-    --bg: theme(colors.background.light);
-    --surface: theme(colors.surface.light);
-    --text: theme(colors.text.light);
-    --text-muted: theme(colors.text.muted);
-    --border: theme(colors.border.light);
+    --color-bg: #F8FAFC; /* neutral.50 */
+    --color-surface: #FFFFFF;
+    --color-border: #E2E8F0; /* neutral.200 */
+
+    --color-text: #0F172A; /* neutral.900 */
+    --color-text-muted: #64748B; /* neutral.500 */
+
+    --color-brand: #2563EB; /* brand.500 */
+    --color-brand-hover: #1E4ED8; /* brand.600 */
+
+    --color-academic: #0EA5E9;
+    --color-success: #16A34A;
+    --color-warning: #F59E0B;
+    --color-danger: #DC2626;
   }
 
   .dark {
-    --bg: theme(colors.background.dark);
-    --surface: theme(colors.surface.dark);
-    --text: theme(colors.text.dark);
-    --text-muted: theme(colors.text.mutedDark);
-    --border: theme(colors.border.dark);
+    --color-bg: #0F172A; /* neutral.900 */
+    --color-surface: #1E293B; /* neutral.800 */
+    --color-border: #334155; /* neutral.700 */
+
+    --color-text: #F8FAFC; /* neutral.50 */
+    --color-text-muted: #94A3B8; /* neutral.400 */
+
+    --color-brand: #4D85FF; /* brand.400 */
+    --color-brand-hover: #80A9FF; /* brand.300 */
+  }
+
+  html {
+    font-size: 14px;
+    scroll-behavior: smooth;
   }
 
   body {
-    @apply bg-[var(--bg)] text-[var(--text)] antialiased;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    @apply antialiased transition-colors duration-300;
   }
 
-  h1 {
-    @apply text-4xl font-extrabold text-primary;
-  }
+  h1 { @apply text-4xl font-bold tracking-tight; }
+  h2 { @apply text-3xl font-semibold; }
+  h3 { @apply text-xl font-semibold; }
+  p  { color: var(--color-text-muted); line-height: 1.6; }
 
-  h2 {
-    @apply text-2xl font-bold text-primary;
+  a {
+    color: var(--color-brand);
+    transition: color 0.2s;
   }
-
-  h3 {
-    @apply text-xl font-semibold text-primary;
-  }
-
-  p {
-    @apply text-[var(--text-muted)] leading-relaxed;
-  }
+  a:hover { color: var(--color-brand-hover); }
 }
 
+/* =========================
+   COMPONENTS
+========================= */
 @layer components {
+  /* Buttons */
   .btn {
-    @apply inline-flex items-center justify-center rounded-lg px-5 py-2.5 font-semibold transition-colors;
+    @apply inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200;
   }
 
-  .btn-primary {
-    @apply btn bg-primary text-white hover:bg-primary-dark dark:bg-primary dark:hover:bg-primary-dark;
+  .btn-brand {
+    @apply text-white;
+    background-color: var(--color-brand);
+  }
+  .btn-brand:hover { background-color: var(--color-brand-hover); }
+
+  .btn-academic {
+    @apply text-white;
+    background-color: var(--color-academic);
+  }
+  .btn-academic:hover { opacity: 0.9; }
+
+  .btn-success { @apply text-white; background-color: var(--color-success); }
+  .btn-warning { @apply text-white; background-color: var(--color-warning); }
+  .btn-danger  { @apply text-white; background-color: var(--color-danger); }
+
+  .btn-outline {
+    @apply border bg-transparent;
+    border-color: var(--color-border);
+    color: var(--color-text);
+  }
+  .btn-outline:hover {
+    background-color: #F1F5F9; /* neutral.100 fallback */
+  }
+  .dark .btn-outline:hover {
+    background-color: #334155; /* neutral.700 fallback */
   }
 
-  .btn-accent {
-    @apply btn bg-accent text-black hover:opacity-90 dark:bg-accent dark:text-black;
+  /* Inputs */
+  .input {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    font-size: 0.875rem;
+    transition: all 0.2s;
+  }
+  .input::placeholder { color: var(--color-text-muted); }
+  .input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25); /* brand.500 with 25% opacity */
   }
 
-  .btn-secondary {
-    @apply btn bg-secondary text-white hover:opacity-90 dark:bg-secondary dark:hover:opacity-90;
+  .label {
+    @apply mb-1 block text-sm font-medium;
+    color: var(--color-text);
   }
 
+  /* Cards */
   .card {
-    @apply rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm;
+    @apply rounded-2xl border p-6 shadow-sm transition-shadow duration-200;
+    border-color: var(--color-border);
+    background-color: var(--color-surface);
+  }
+  .card-hover {
+    @apply hover:shadow-md hover:-translate-y-1;
+  }
+
+  /* Alerts */
+  .alert { @apply rounded-lg px-4 py-3 text-sm font-medium; }
+  .alert-success {
+    border: 1px solid var(--color-success);
+    background-color: rgba(22, 163, 74, 0.1);
+    color: var(--color-success);
+  }
+  .alert-warning {
+    border: 1px solid var(--color-warning);
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--color-warning);
+  }
+  .alert-danger {
+    border: 1px solid var(--color-danger);
+    background-color: rgba(220, 38, 38, 0.1);
+    color: var(--color-danger);
   }
 }
 
-/* Custom scrollbar */
+/* =========================
+   UTILITIES
+========================= */
 @layer utilities {
-  .scrollbar-thin {
-    scrollbar-width: thin;
+  .text-muted { color: var(--color-text-muted); }
+  .bg-surface { background-color: var(--color-surface); }
+  .border-default { border-color: var(--color-border); }
+
+  .gradient-brand {
+    background-image: linear-gradient(to right, var(--color-brand), var(--color-academic));
   }
 
-  .scrollbar-thin::-webkit-scrollbar {
-    @apply w-2;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-track {
-    @apply bg-transparent;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    @apply bg-[var(--border)] rounded-full;
-  }
-
-  /* Smooth transitions */
-  * {
-    @apply transition-colors duration-200;
-  }
-
-  /* Form autofill styles */
-  input:-webkit-autofill,
-  input:-webkit-autofill:hover,
-  input:-webkit-autofill:focus {
-    -webkit-text-fill-color: var(--text);
-    -webkit-box-shadow: 0 0 0px 1000px var(--surface) inset;
-    transition: background-color 5000s ease-in-out 0s;
-  }
-
-  /* Selection */
-  ::selection {
-    @apply bg-primary/30;
-  }
-
-  /* Hide number input arrows */
-  input[type="number"]::-webkit-inner-spin-button,
-  input[type="number"]::-webkit-outer-spin-button {
-    @apply appearance-none m-0;
-  }
-
-  .animate-slideDown {
-    animation: slideDown 0.3s ease-out;
-  }
-  
-  .animate-slideUp {
-    animation: slideUp 0.3s ease-out;
-  }
-  
-  .animate-fadeIn {
-    animation: fadeIn 0.3s ease-out;
-  }
-
-  /* Glass effect */
-  .glass {
-    @apply backdrop-blur-md bg-white/10 dark:bg-black/10 border border-white/20 dark:border-black/20;
-  }
-
-  /* Gradient text */
-  .gradient-text {
-    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
-  }
-
-  /* Hover lift effect */
   .hover-lift {
-    @apply transition-transform duration-200 hover:-translate-y-0.5;
+    @apply transition-transform duration-200 hover:-translate-y-1;
   }
 
-  /* Pulse glow */
-  .pulse-glow {
-    animation: pulseGlow 2s infinite;
-  }
-}
-
-
-/* Add to your existing global.css */
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-
-@keyframes pulseGlow {
-  0%, 100% {
-    box-shadow: 0 0 0 0 theme('colors.primary.DEFAULT / 20%');
-  }
-  50% {
-    box-shadow: 0 0 20px 0 theme('colors.primary.DEFAULT / 30%');
+  .transition-theme {
+    @apply transition-colors duration-300;
   }
 }
