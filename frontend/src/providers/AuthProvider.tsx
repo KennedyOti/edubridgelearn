@@ -1,10 +1,10 @@
+// src/providers/AuthProvider.tsx
+
 "use client";
 
 import { createContext, useEffect, useState } from "react";
 import { User } from "@/types/auth.types";
 import { authService } from "@/lib/services/auth.service";
-import { setToken, getToken, removeToken } from "@/lib/utils/storage";
-import { setupInterceptors } from "@/lib/api/interceptors";
 
 interface AuthContextType {
   user: User | null;
@@ -21,21 +21,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Initialize user on mount
   useEffect(() => {
-    setupInterceptors();
-
     const init = async () => {
-      const token = getToken();
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
       try {
-        const userData = await authService.getUser();
+        const userData = await authService.getUser(); // cookie automatically sent
         setUser(userData);
       } catch {
-        removeToken();
+        setUser(null); // no valid cookie or user
       } finally {
         setLoading(false);
       }
@@ -44,16 +37,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     init();
   }, []);
 
+  // Login: backend sets HTTP-only cookie, returns user
   const login = async (data: any) => {
-    const res = await authService.login(data);
-    setToken(res.token);
-    setUser(res.user);
+    try {
+      const userData = await authService.login(data); // backend sets cookie
+      setUser(userData);
+    } catch (error) {
+      setUser(null);
+      throw error; // allow UI to show error
+    }
   };
 
+  // Logout: backend clears cookie
   const logout = async () => {
-    await authService.logout();
-    removeToken();
-    setUser(null);
+    try {
+      await authService.logout(); // backend clears cookie
+    } finally {
+      setUser(null);
+    }
   };
 
   return (

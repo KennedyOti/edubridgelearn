@@ -1,3 +1,5 @@
+// app/lib/api/interceptors.ts
+
 import { api } from "./axios";
 import { getToken, removeToken } from "../utils/storage";
 

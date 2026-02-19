@@ -1,31 +1,24 @@
 // app/dashboard/page.tsx
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { authService } from "@/lib/services/auth.service";
 
+export default async function DashboardRedirect() {
+  // Server component: cookies() returns a Promise
+  const cookieStore = await cookies();
+  // const token = cookieStore.get("token")?.value;
+  const token = cookieStore.get("token");
 
-"use client";
+  if (!token) redirect("/login");
 
-import { useContext, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { AuthContext } from "@/providers/AuthProvider";
+  let user;
+  try {
+    // Fetch user from backend; cookie sent automatically
+    user = await authService.getUser();
+  } catch {
+    redirect("/login");
+  }
 
-export default function DashboardRedirect() {
-  const { user } = useContext(AuthContext);
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!user) return;
-
-    switch (user.role) {
-      case "admin":
-        router.push("/dashboard/admin");
-        break;
-      case "student":
-        router.push("/dashboard/student");
-        break;
-      case "tutor":
-        router.push("/dashboard/tutor");
-        break;
-    }
-  }, [user]);
-
-  return null;
+  // Redirect to role-specific dashboard
+  redirect(`/dashboard/${user.role}`);
 }
