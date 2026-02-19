@@ -23,7 +23,7 @@ export default function RootLayout({
         <div className="min-h-screen flex flex-col">
 
           {/* Header */}
-          <header className="border-b border-default bg-surface transition-theme">
+          {/* <header className="border-b border-default bg-surface transition-theme">
             <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
               <h1 className="text-xl font-bold text-brand transition-theme">
                 EduBridgeLearn
@@ -42,12 +42,10 @@ export default function RootLayout({
                 >
                   Join Us
                 </a>
-
-                {/* Theme Toggle */}
                 <ThemeToggle />
               </nav>
             </div>
-          </header>
+          </header> */}
 
           {/* Main Content */}
           <main className="flex-1">{children}</main>

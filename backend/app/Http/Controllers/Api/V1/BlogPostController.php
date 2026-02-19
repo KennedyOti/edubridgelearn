@@ -50,11 +50,11 @@ class BlogPostController extends Controller
     public function show(Request $request, $slug)
     {
         $post = BlogPost::with([
-                'author:id,name',
-                'category',
-                'tags',
-                'approvedComments.user:id,name'
-            ])
+            'author:id,name',
+            'category',
+            'tags',
+            'approvedComments.user:id,name'
+        ])
             ->published()
             ->where('slug', $slug)
             ->firstOrFail();
@@ -202,6 +202,104 @@ class BlogPostController extends Controller
     | View Tracking (Unique Per IP Per Day)
     |--------------------------------------------------------------------------
     */
+
+
+    public function approve(Request $request, $id)
+    {
+        $post = BlogPost::findOrFail($id);
+
+        if (!$request->user()->isAdmin()) {
+            return response()->json([
+                'message' => 'Only admin can approve posts'
+            ], 403);
+        }
+
+        if ($post->status !== 'pending') {
+            return response()->json([
+                'message' => 'Only pending posts can be approved'
+            ], 422);
+        }
+
+        $post->update([
+            'status' => 'published',
+            'published_at' => now(),
+        ]);
+
+        return response()->json([
+            'message' => 'Post approved successfully',
+            'data' => $post
+        ]);
+    }
+
+    public function submit(Request $request, $id)
+    {
+        $post = BlogPost::findOrFail($id);
+        $user = $request->user();
+
+        if ($post->user_id !== $user->id && !$user->isAdmin()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        if ($post->status !== 'draft') {
+            return response()->json([
+                'message' => 'Only draft posts can be submitted'
+            ], 422);
+        }
+
+        $post->update([
+            'status' => 'pending'
+        ]);
+
+        return response()->json([
+            'message' => 'Post submitted for review',
+            'data' => $post
+        ]);
+    }
+
+    public function reject(Request $request, $id)
+    {
+        $post = BlogPost::findOrFail($id);
+
+        if (!$request->user()->isAdmin()) {
+            return response()->json(['message' => 'Only admin can reject posts'], 403);
+        }
+
+        if ($post->status !== 'pending') {
+            return response()->json([
+                'message' => 'Only pending posts can be rejected'
+            ], 422);
+        }
+
+        $post->update([
+            'status' => 'draft'
+        ]);
+
+        return response()->json([
+            'message' => 'Post rejected and moved back to draft',
+            'data' => $post
+        ]);
+    }
+
+
+    public function feature(Request $request, $id)
+    {
+        $post = BlogPost::findOrFail($id);
+
+        if (!$request->user()->isAdmin()) {
+            return response()->json(['message' => 'Only admin can feature posts'], 403);
+        }
+
+        $post->update([
+            'is_featured' => !$post->is_featured
+        ]);
+
+        return response()->json([
+            'message' => 'Post feature status updated',
+            'data' => $post
+        ]);
+    }
+
+
 
     private function trackView(Request $request, BlogPost $post)
     {

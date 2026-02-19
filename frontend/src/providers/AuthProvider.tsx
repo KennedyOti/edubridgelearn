@@ -23,6 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     setupInterceptors();
+
     const init = async () => {
       const token = getToken();
       if (!token) {
