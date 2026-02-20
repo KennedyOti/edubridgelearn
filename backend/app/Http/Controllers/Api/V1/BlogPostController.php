@@ -90,7 +90,6 @@ class BlogPostController extends Controller
         $user = $request->user();
         $status = $validated['status'] ?? 'draft';
 
-        // Only admin can publish directly
         if (!$user->isAdmin() && $status === 'published') {
             $status = 'pending';
         }
