@@ -8,7 +8,7 @@ interface PageProps {
 export default function VerifyEmailPage({ searchParams }: PageProps) {
   return (
     <Suspense fallback={<div className="text-center mt-10">Verifying your magic... ⏳</div>}>
-      <VerifyEmailClient id={searchParams.id} hash={searchParams.hash} />
+      <VerifyEmailClient searchParams={searchParams} />
     </Suspense>
   );
 }

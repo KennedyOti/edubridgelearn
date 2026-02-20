@@ -94,7 +94,7 @@ export default function RegisterForm() {
           <p className="text-sm text-text-muted">
             Didn&apos;t get the email?{" "}
             <Link
-              href="/auth/verify-email/resend-verification-email"
+              href="/verify-email/resend-verification-email"
               className="text-brand hover:text-brand-hover font-medium transition-all hover:underline"
             >
               Resend verification link

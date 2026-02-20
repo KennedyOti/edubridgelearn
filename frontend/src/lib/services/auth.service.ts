@@ -24,8 +24,8 @@ export const authService = {
   },
 
   /** Email verification */
-  verifyEmail: (id: string, hash: string, query: string) =>
-    api.get(`${endpoints.verifyEmail}/${id}/${hash}?${query}`),
+  verifyEmail: (queryString: string) => 
+    api.get(`${endpoints.verifyEmail}?${queryString}`),
 
   /** Resend verification for logged-in user */
   resendVerification: () => api.post(endpoints.resendVerification),
