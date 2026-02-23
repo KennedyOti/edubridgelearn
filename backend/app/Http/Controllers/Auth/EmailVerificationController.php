@@ -5,78 +5,96 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class EmailVerificationController extends Controller
 {
-    // Resend verification email
-    public function resend(Request $request)
+
+
+    public function verify(Request $request)
     {
-        if ($request->user()->hasVerifiedEmail()) {
-            return response()->json(['message' => 'Already verified.'], 200);
+        $validator = \Validator::make($request->all(), [
+            'email' => 'required|email|exists:users,email',
+            'otp' => 'required|digits:6',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
         }
 
-        $request->user()->sendEmailVerificationNotification();
+        $user = User::where('email', $request->email)->first();
 
-        return response()->json(['message' => 'Verification link resent.'], 200);
+        if ($user->hasVerifiedEmail()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Email already verified.'
+            ], 400);
+        }
+
+        if (!$user->email_otp || !$user->email_otp_expires_at) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No OTP found. Please request a new one.'
+            ], 400);
+        }
+
+        if (now()->greaterThan($user->email_otp_expires_at)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'OTP expired. Please request a new one.'
+            ], 400);
+        }
+
+        if (!Hash::check($request->otp, $user->email_otp)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid OTP.'
+            ], 400);
+        }
+
+        $user->email_verified_at = now();
+        $user->email_otp = null;
+        $user->email_otp_expires_at = null;
+
+        if ($user->isStudent()) {
+            $user->approved_at = now();
+        }
+
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Email verified successfully.'
+        ], 200);
     }
 
-
-    public function verify(Request $request, $id, $hash)
+    public function resendOtp(Request $request)
     {
-        // Validate the signature manually by reconstructing the URL
-        $expires = $request->query('expires');
-        $signature = $request->query('signature');
-
-        if (!$expires || !$signature) {
-            return response()->json(['message' => 'Invalid verification link.'], 403);
-        }
-
-        // Check if link has expired
-        if (now()->timestamp > $expires) {
-            return response()->json(['message' => 'Verification link has expired.'], 403);
-        }
-
-        // Find the user
-        $user = User::findOrFail($id);
-
-        // Validate the hash matches the user's email
-        if (!hash_equals($hash, sha1($user->getEmailForVerification()))) {
-            return response()->json(['message' => 'Invalid verification link.'], 403);
-        }
-
-        // Validate the signature
-        $url = url("/api/email/verify/{$id}/{$hash}");
-        $queryString = http_build_query([
-            'expires' => $expires,
+        $request->validate([
+            'email' => ['required', 'email', 'exists:users,email'],
         ]);
-        $urlToSign = "{$url}?{$queryString}";
 
-        $expectedSignature = hash_hmac('sha256', $urlToSign, config('app.key'));
+        $user = User::where('email', $request->email)->first();
 
-        if (!hash_equals($signature, $expectedSignature)) {
-            return response()->json(['message' => 'Invalid or expired verification link.'], 403);
-        }
-
-        // Check if already verified
         if ($user->hasVerifiedEmail()) {
             return response()->json(['message' => 'Already verified.'], 200);
         }
 
-        // Mark as verified
-        $user->markEmailAsVerified();
-        event(new Verified($user));
+        $otp = random_int(100000, 999999);
 
-        // Auto-approve students
-        if ($user->isStudent()) {
-            $user->approved_at = now();
-            $user->save();
-        }
+        $user->email_otp = Hash::make($otp);
+        $user->email_otp_expires_at = now()->addMinutes(10);
+        $user->save();
 
-        return response()->json(['message' => 'Email verified successfully.'], 200);
+        $user->notify(new \App\Notifications\EmailOtpNotification($otp));
+
+        return response()->json(['message' => 'OTP resent successfully.'], 200);
     }
-
 
     public function resendUnauthenticated(Request $request)
     {

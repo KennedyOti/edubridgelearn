@@ -6,6 +6,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
+  username?: string;
   role: SystemRole;
   email_verified_at: string | null;
   approved_at: string | null;

@@ -4,6 +4,18 @@ import { api } from "../api/axios";
 import { endpoints } from "../api/endpoints";
 import { User, AuthResponse } from "@/types/auth.types";
 
+
+interface VerifyEmailPayload {
+  email: string;
+  otp: string;
+}
+
+interface VerifyEmailResponse {
+  message: string;
+}
+
+
+
 export const authService = {
   /** Register a new user */
   register: (data: any) => api.post(endpoints.register, data),
@@ -11,7 +23,7 @@ export const authService = {
   /** Login user: backend sets HTTP-only cookie */
   login: async (data: any): Promise<User> => {
     const res = await api.post<AuthResponse>(endpoints.login, data);
-    return res.data.user; // cookie is already set by backend
+    return res.data.user; 
   },
 
   /** Logout user: backend clears cookie */
@@ -23,9 +35,15 @@ export const authService = {
     return res.data;
   },
 
-  /** Email verification */
-  verifyEmail: (queryString: string) => 
-    api.get(`${endpoints.verifyEmail}?${queryString}`),
+/** Verify email using OTP */
+/* verifyEmail: (data: { userId: string; otp: string }) =>
+  api.post(endpoints.verifyEmail, data), */
+verifyEmail: (data: VerifyEmailPayload) =>
+  api.post<VerifyEmailResponse>(endpoints.verifyEmail, data),
+
+/** Resend OTP */
+resendOtp: (email: string) =>
+  api.post(endpoints.resendVerificationPublic, { email }),
 
   /** Resend verification for logged-in user */
   resendVerification: () => api.post(endpoints.resendVerification),

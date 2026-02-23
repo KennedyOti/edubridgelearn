@@ -16,14 +16,16 @@ use Illuminate\Http\Request;
 Route::post('/register', [RegisterController::class, 'store']);
 Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:auth');
 Route::post('/logout', [LogoutController::class, 'store'])->middleware('auth:sanctum');
-Route::post('/email/resend', [EmailVerificationController::class, 'resend'])->middleware('auth:sanctum');
+// Route::post('/email/resend', [EmailVerificationController::class, 'resend'])->middleware('auth:sanctum');
+Route::post('/email/resend', [EmailVerificationController::class, 'resendOtp'])
+    ->middleware('throttle:6,1');
 
-Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
-    ->name('verification.verify');
+Route::post('/email/verify', [EmailVerificationController::class, 'verify'])
+    ->middleware('throttle:6,1');
 
 Route::post('/forgot-password', [PasswordResetController::class, 'forgot'])->middleware('throttle:auth');
 Route::post('/reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:auth');
-Route::post('/email/resend-unauthenticated', [EmailVerificationController::class, 'resendUnauthenticated'])
+Route::post('/email/resend-unauthenticated', [EmailVerificationController::class, 'resendOtp'])
     ->middleware('throttle:auth');
 
 // Example protected route (for testing)
@@ -74,7 +76,3 @@ Route::prefix('v1/blog')->group(function () {
         Route::patch('/comments/{id}/reject', [BlogCommentController::class, 'reject']);
     });
 });
-
-
-
-

@@ -1,3 +1,5 @@
+// src/lib/api/endpoints.ts
+
 export const endpoints = {
   register: "/register",
   login: "/login",

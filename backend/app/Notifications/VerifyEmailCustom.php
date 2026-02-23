@@ -10,48 +10,37 @@ use Illuminate\Support\Facades\URL;
 
 class VerifyEmailCustom extends VerifyEmail
 {
-    /*  protected function verificationUrl($notifiable)
-     {
-         $signedUrl = URL::temporarySignedRoute(
-             'verification.verify',
-             now()->addMinutes(
-                 config('auth.verification.expire', 60)
-             ),
-             [
-                 'id' => $notifiable->getKey(),
-                 'hash' => sha1($notifiable->getEmailForVerification()),
-             ]
-         );
-
-         $query = parse_url($signedUrl, PHP_URL_QUERY);
-
-         return config('app.frontend_url') . '/verify-email?' . $query;
-     }
-  */
+     /**
+     * Generate the frontend verification URL.
+     *
+     * @param  mixed  $notifiable
+     * @return string
+     */
     protected function verificationUrl($notifiable)
     {
+        // Generate a temporary signed URL to the backend route
         $signedUrl = URL::temporarySignedRoute(
-            'verification.verify',
-            now()->addMinutes(
-                config('auth.verification.expire', 60)
-            ),
+            'verification.verify', // backend route name
+            now()->addMinutes(config('auth.verification.expire', 60)),
             [
                 'id' => $notifiable->getKey(),
                 'hash' => sha1($notifiable->getEmailForVerification()),
             ]
         );
 
-        $parsed = parse_url($signedUrl);
+        // Only keep the query string
+        $queryString = parse_url($signedUrl, PHP_URL_QUERY);
 
-        $pathSegments = explode('/', trim($parsed['path'], '/'));
-        $id = $pathSegments[count($pathSegments) - 2];
-        $hash = $pathSegments[count($pathSegments) - 1];
-
-        return config('app.frontend_url')
-            . "/verify-email?id={$id}&hash={$hash}&{$parsed['query']}";
+        // Return the frontend-friendly URL
+        return config('app.frontend_url') . "/verify-email?" . $queryString;
     }
 
-
+    /**
+     * Build the email message.
+     *
+     * @param  mixed  $notifiable
+     * @return \Illuminate\Notifications\Messages\MailMessage
+     */
     public function toMail($notifiable)
     {
         $verifyUrl = $this->verificationUrl($notifiable);

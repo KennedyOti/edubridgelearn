@@ -1,3 +1,5 @@
+// src/app/(auth)/verify-email/page.tsx
+
 import VerifyEmailClient from "@/components/auth/VerifyEmailClient";
 import { Suspense } from "react";
 
@@ -8,7 +10,7 @@ interface PageProps {
 export default function VerifyEmailPage({ searchParams }: PageProps) {
   return (
     <Suspense fallback={<div className="text-center mt-10">Verifying your magic... ⏳</div>}>
-      <VerifyEmailClient searchParams={searchParams} />
+      <VerifyEmailClient />
     </Suspense>
   );
 }
