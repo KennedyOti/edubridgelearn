@@ -1,6 +1,13 @@
 import { create } from "zustand";
 import api from "./api";
 
+export interface ContributorProfile {
+  bio: string | null;
+  expertise_areas: string[] | null;
+  verification_status: "pending" | "approved" | "rejected";
+  total_resources: number;
+}
+
 export interface StudentProfile {
   education_level: string | null;
   curriculum: string | null;
@@ -44,6 +51,7 @@ export interface User {
   last_login_at: string | null;
   student_profile?: StudentProfile | null;
   tutor_profile?: TutorProfile | null;
+  contributor_profile?: ContributorProfile | null;
   created_at: string;
 }
 

@@ -87,6 +87,8 @@ function RegisterForm() {
         router.push("/onboarding");
       } else if (user?.role === "tutor") {
         router.push("/tutor/setup");
+      } else if (user?.role === "contributor") {
+        router.push("/contributor/setup");
       } else {
         router.push("/dashboard");
       }

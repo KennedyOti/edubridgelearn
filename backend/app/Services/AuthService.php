@@ -7,6 +7,7 @@ use App\Models\ContributorProfile;
 use App\Models\StudentProfile;
 use App\Models\TutorProfile;
 use App\Models\User;
+use App\Services\EmailVerificationService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -41,6 +42,13 @@ class AuthService
             $token = $user->createToken('auth_token', [$role])->plainTextToken;
 
             $this->logAuth($user->id, $user->email, 'register', $ip, $userAgent);
+
+            // Send OTP verification email
+            try {
+                app(EmailVerificationService::class)->sendOtp($user);
+            } catch (\Exception) {
+                // Non-blocking: log but don't fail registration
+            }
 
             return [
                 'user' => $user->load($this->getProfileRelation($role)),

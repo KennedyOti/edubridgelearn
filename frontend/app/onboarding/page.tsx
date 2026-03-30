@@ -31,7 +31,10 @@ const steps = [
 export default function OnboardingPage() {
   const router = useRouter();
   const { user, updateUser } = useAuthStore();
+  const [mounted, setMounted] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+
+  useEffect(() => { setMounted(true); }, []);
   const [isLoading, setIsLoading] = useState(false);
   const [curriculumData, setCurriculumData] = useState<CurriculumData | null>(null);
   const [subjects, setSubjects] = useState<string[]>([]);
@@ -152,7 +155,7 @@ export default function OnboardingPage() {
         <div className="max-w-3xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-xl font-bold text-foreground">Welcome, {user?.name}!</h1>
+              <h1 className="text-xl font-bold text-foreground">Welcome{mounted && user?.name ? `, ${user.name}` : ""}!</h1>
               <p className="text-sm text-muted-foreground">Let&apos;s set up your learning profile</p>
             </div>
             <button
