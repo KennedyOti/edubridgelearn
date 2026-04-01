@@ -8,13 +8,18 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
+use App\Services\EmailVerificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
-    public function __construct(private AuthService $authService) {}
+    public function __construct(
+        private AuthService $authService,
+        private EmailVerificationService $emailVerificationService
+    ) {}
 
     public function register(RegisterRequest $request): JsonResponse
     {
@@ -185,14 +190,16 @@ class AuthController extends Controller
     public function me(Request $request): JsonResponse
     {
         $user = $request->user();
+
         $relation = match ($user->role) {
             'tutor' => 'tutorProfile',
             'contributor' => 'contributorProfile',
-            default => 'studentProfile',
+            'student' => 'studentProfile',
+            default => null, // admin, super_admin, moderator have no profile relation
         };
 
         return response()->json([
-            'data' => new UserResource($user->load($relation)),
+            'data' => new UserResource($relation ? $user->load($relation) : $user),
         ]);
     }
 
@@ -214,11 +221,54 @@ class AuthController extends Controller
         ]);
     }
 
+    public function verifyEmail(Request $request): JsonResponse
+    {
+        $request->validate(['otp' => 'required|string|size:6']);
+
+        $user = $request->user();
+
+        if ($user->email_verified_at) {
+            return response()->json([
+                'meta' => ['message' => 'Email is already verified.'],
+            ]);
+        }
+
+        try {
+            $this->emailVerificationService->verifyOtp($user, $request->otp);
+
+            return response()->json([
+                'data' => new UserResource($user->fresh()),
+                'meta' => ['message' => 'Email verified successfully.'],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'errors' => [['message' => $e->getMessage()]],
+            ], (int) $e->getCode() ?: 400);
+        }
+    }
+
+    public function resendVerification(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        try {
+            $this->emailVerificationService->resendOtp($user);
+
+            return response()->json([
+                'meta' => ['message' => 'Verification OTP sent to ' . $user->email],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'errors' => [['message' => $e->getMessage()]],
+            ], (int) $e->getCode() ?: 400);
+        }
+    }
+
     public function deleteAccount(Request $request): JsonResponse
     {
         $request->validate(['password' => 'required|string']);
 
-        if (!\Hash::check($request->password, $request->user()->password)) {
+        if (!Hash::check($request->password, $request->user()->password)) {
             return response()->json([
                 'errors' => [['message' => 'Invalid password.']],
             ], 403);

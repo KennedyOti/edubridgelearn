@@ -35,19 +35,25 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginForm) => {
     setError("");
     try {
-      const result = await login(data.email, data.password);
-      if (result.requires_2fa) {
-        // 2FA flow — for now redirect to dashboard
-        router.push("/dashboard");
+      await login(data.email, data.password);
+      const user = useAuthStore.getState().user;
+      if (!user) return;
+
+      if (user.role === "admin" || user.role === "super_admin") {
+        // Admin accounts must use the dedicated admin portal
+        await useAuthStore.getState().logout();
+        setError("Admin accounts must sign in via the Admin Portal.");
+        return;
+      } else if (user.role === "student") {
+        router.push(user.student_profile?.onboarding_completed ? "/dashboard" : "/onboarding");
+      } else if (user.role === "tutor") {
+        // Route to setup only if they haven't filled in their profile yet
+        router.push(user.tutor_profile?.bio ? "/dashboard" : "/tutor/setup");
+      } else if (user.role === "contributor") {
+        // Route to setup only if they haven't filled in their profile yet
+        router.push(user.contributor_profile?.bio ? "/dashboard" : "/contributor/setup");
       } else {
-        const user = useAuthStore.getState().user;
-        if (user?.role === "student" && !user.student_profile?.onboarding_completed) {
-          router.push("/onboarding");
-        } else if (user?.role === "tutor") {
-          router.push("/tutor/setup");
-        } else {
-          router.push("/dashboard");
-        }
+        router.push("/dashboard");
       }
     } catch (err: unknown) {
       const error = err as { response?: { data?: { errors?: { message: string }[] } } };
@@ -168,6 +174,13 @@ export default function LoginPage() {
         Don&apos;t have an account?{" "}
         <Link href="/auth/register" className="text-primary font-semibold hover:text-primary-dark">
           Sign up for free
+        </Link>
+      </p>
+
+      <p className="text-center text-xs text-muted-foreground mt-4">
+        Administrator?{" "}
+        <Link href="/admin/login" className="text-muted-foreground underline hover:text-foreground">
+          Sign in to the Admin Portal
         </Link>
       </p>
     </div>
