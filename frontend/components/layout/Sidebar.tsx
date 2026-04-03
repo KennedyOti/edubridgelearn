@@ -40,6 +40,7 @@ const navConfig: Record<string, NavItem[]> = {
     { label: "Resources", href: "/resources", icon: FileText },
     { label: "Progress", href: "/progress", icon: Trophy },
     { label: "Community", href: "/community", icon: Users },
+    { label: "Blog", href: "/blog", icon: PenTool },
   ],
   tutor: [
     { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -49,6 +50,7 @@ const navConfig: Record<string, NavItem[]> = {
     { label: "Earnings", href: "/earnings", icon: DollarSign },
     { label: "Analytics", href: "/analytics", icon: BarChart3 },
     { label: "Resources", href: "/resources", icon: FileText },
+    { label: "Blog", href: "/blog", icon: PenTool },
   ],
   contributor: [
     { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -56,6 +58,7 @@ const navConfig: Record<string, NavItem[]> = {
     { label: "Earnings", href: "/earnings", icon: DollarSign },
     { label: "Analytics", href: "/analytics", icon: BarChart3 },
     { label: "Blog", href: "/blog", icon: PenTool },
+    { label: "My Posts", href: "/blog/my-posts", icon: FileText },
   ],
   moderator: [
     { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
