@@ -16,6 +16,7 @@ import {
   X,
   BookOpen,
   Flag,
+  PenTool,
 } from "lucide-react";
 
 interface AdminNavItem {
@@ -34,6 +35,7 @@ const primaryNav: AdminNavItem[] = [
 ];
 
 const secondaryNav: AdminNavItem[] = [
+  { label: "Blog Moderation", href: "/admin/blog", icon: PenTool, tab: "blog" },
   { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },
   { label: "Content", href: "/admin/content", icon: BookOpen },
   { label: "Reports", href: "/admin/reports", icon: Flag },
@@ -118,7 +120,7 @@ export function AdminSidebar({ onClose, activeTab = "overview" }: AdminSidebarPr
         </p>
         <ul className="space-y-0.5">
           {secondaryNav.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive = item.tab ? activeTab === item.tab : pathname === item.href;
             return (
               <li key={item.href}>
                 <Link

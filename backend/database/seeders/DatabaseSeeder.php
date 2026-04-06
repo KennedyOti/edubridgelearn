@@ -229,5 +229,9 @@ class DatabaseSeeder extends Seeder
         // Seed subscription plans
         $this->call(SubscriptionPlanSeeder::class);
         $this->command->info('Subscription plans seeded.');
+
+        // Seed blog categories
+        $this->call(BlogCategorySeeder::class);
+        $this->command->info('Blog categories seeded.');
     }
 }

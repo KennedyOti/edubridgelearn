@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AdminController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\BlogController;
 use App\Http\Controllers\Api\V1\BookingController;
 use App\Http\Controllers\Api\V1\ContributorController;
 use App\Http\Controllers\Api\V1\CurriculumController;
@@ -45,6 +46,15 @@ Route::prefix('v1')->group(function () {
     // Public lesson browsing
     Route::get('/lessons', [LessonController::class, 'index']);
     Route::get('/lessons/{uuid}', [LessonController::class, 'show'])->middleware('auth:sanctum')->withoutMiddleware([]);
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Public Blog Routes
+    // ──────────────────────────────────────────────────────────────────────
+    Route::prefix('blogs')->group(function () {
+        Route::get('/', [BlogController::class, 'index']);
+        Route::get('/categories', [BlogController::class, 'categories']);
+        Route::get('/{slug}', [BlogController::class, 'show'])->where('slug', '[a-z0-9-]+');
+    });
 
     // ──────────────────────────────────────────────────────────────────────
     // Authenticated Routes
@@ -116,6 +126,19 @@ Route::prefix('v1')->group(function () {
         Route::post('/bookings/{uuid}/cancel', [BookingController::class, 'cancel'])->middleware('role:student,tutor,admin,super_admin');
         Route::post('/bookings/{uuid}/review', [BookingController::class, 'review'])->middleware('role:student');
 
+        // ── Blog Routes (authors: contributor, tutor, admin) ─────────────
+        Route::middleware('role:contributor,tutor,admin,super_admin')->prefix('blogs')->group(function () {
+            Route::post('/', [BlogController::class, 'store']);
+            Route::get('/my-posts', [BlogController::class, 'myPosts']);
+            Route::get('/my-posts/{uuid}', [BlogController::class, 'showForEdit']);
+            Route::put('/{uuid}', [BlogController::class, 'update']);
+            Route::delete('/{uuid}', [BlogController::class, 'destroy']);
+            Route::post('/{uuid}/submit', [BlogController::class, 'submit']);
+        });
+
+        // Blog comments (any authenticated user)
+        Route::post('/blogs/{slug}/comment', [BlogController::class, 'addComment']);
+
         // ── Admin Routes ──────────────────────────────────────────────────
         Route::middleware('role:admin,super_admin')->prefix('admin')->group(function () {
             Route::get('/dashboard', [AdminController::class, 'getDashboardStats']);
@@ -132,6 +155,17 @@ Route::prefix('v1')->group(function () {
             // Super admin only
             Route::middleware('role:super_admin')->group(function () {
                 Route::post('/create-admin', [AdminController::class, 'createAdmin']);
+            });
+
+            // Blog moderation
+            Route::prefix('blogs')->group(function () {
+                Route::get('/', [BlogController::class, 'adminIndex']);
+                Route::post('/{uuid}/approve', [BlogController::class, 'approve']);
+                Route::post('/{uuid}/reject', [BlogController::class, 'reject']);
+                Route::post('/{uuid}/feature', [BlogController::class, 'toggleFeatured']);
+                Route::post('/categories', [BlogController::class, 'storeCategory']);
+                Route::post('/comments/{id}/approve', [BlogController::class, 'approveComment']);
+                Route::delete('/comments/{id}', [BlogController::class, 'deleteComment']);
             });
         });
     });
