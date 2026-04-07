@@ -40,9 +40,7 @@ export default function LoginPage() {
       if (!user) return;
 
       if (user.role === "admin" || user.role === "super_admin") {
-        // Admin accounts must use the dedicated admin portal
-        await useAuthStore.getState().logout();
-        setError("Admin accounts must sign in via the Admin Portal.");
+        router.push("/admin/dashboard");
         return;
       } else if (user.role === "student") {
         router.push(user.student_profile?.onboarding_completed ? "/dashboard" : "/onboarding");

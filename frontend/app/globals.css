@@ -1,36 +1,50 @@
 @import "tailwindcss";
 
 :root {
-  --primary: 234 93% 49%;
-  --primary-light: 234 93% 60%;
-  --primary-dark: 234 93% 38%;
-  --primary-50: 234 100% 97%;
-  --primary-100: 234 100% 93%;
-  --primary-200: 234 97% 85%;
-  --primary-500: 234 93% 49%;
-  --primary-600: 234 93% 42%;
-  --primary-700: 234 93% 35%;
+  /* ── Primary: Navy Blue #293C7C ─────────────────────── */
+  --primary: 226 50% 32%;
+  --primary-light: 226 47% 44%;
+  --primary-dark: 226 50% 24%;
+  --primary-50: 226 100% 97%;
+  --primary-100: 226 80% 93%;
+  --primary-200: 226 60% 84%;
+  --primary-500: 226 50% 32%;
+  --primary-600: 226 50% 27%;
+  --primary-700: 226 50% 22%;
 
-  --secondary: 262 83% 58%;
-  --secondary-light: 262 83% 68%;
+  /* ── Secondary: Golden Amber #C7984F ────────────────── */
+  --secondary: 37 52% 55%;
+  --secondary-dark: 30 40% 49%;
+  --secondary-light: 37 52% 65%;
+  --secondary-50: 37 100% 97%;
+  --secondary-100: 37 80% 91%;
 
-  --accent: 168 76% 42%;
-  --accent-light: 168 76% 52%;
+  /* ── Accent: Dark Teal #024944 ──────────────────────── */
+  --accent: 176 95% 15%;
+  --accent-light: 176 60% 28%;
+  --accent-50: 176 80% 96%;
 
-  --warning: 38 92% 50%;
+  /* ── Highlight: Crimson #812B4A ─────────────────────── */
+  --highlight: 338 50% 34%;
+  --highlight-light: 338 50% 44%;
+  --highlight-50: 338 80% 97%;
+
+  /* ── Semantic / Functional ──────────────────────────── */
+  --warning: 37 52% 55%;
   --error: 0 84% 60%;
   --success: 142 71% 45%;
-  --info: 199 89% 48%;
+  --info: 226 50% 52%;
 
+  /* ── Neutral / Surface ──────────────────────────────── */
   --background: 0 0% 100%;
-  --foreground: 222 47% 11%;
+  --foreground: 226 50% 14%;
   --muted: 220 14% 96%;
   --muted-foreground: 220 9% 46%;
   --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
+  --card-foreground: 226 50% 14%;
   --border: 220 13% 91%;
   --input: 220 13% 91%;
-  --ring: 234 93% 49%;
+  --ring: 226 50% 32%;
   --radius: 0.625rem;
 }
 
@@ -46,10 +60,18 @@
   --color-primary-700: hsl(var(--primary-700));
 
   --color-secondary: hsl(var(--secondary));
+  --color-secondary-dark: hsl(var(--secondary-dark));
   --color-secondary-light: hsl(var(--secondary-light));
+  --color-secondary-50: hsl(var(--secondary-50));
+  --color-secondary-100: hsl(var(--secondary-100));
 
   --color-accent: hsl(var(--accent));
   --color-accent-light: hsl(var(--accent-light));
+  --color-accent-50: hsl(var(--accent-50));
+
+  --color-highlight: hsl(var(--highlight));
+  --color-highlight-light: hsl(var(--highlight-light));
+  --color-highlight-50: hsl(var(--highlight-50));
 
   --color-warning: hsl(var(--warning));
   --color-error: hsl(var(--error));
@@ -82,31 +104,53 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Smooth scrolling */
 html {
   scroll-behavior: smooth;
 }
 
-/* Focus styles */
 :focus-visible {
   outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
+/* ── Animations ─────────────────────────────────────── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-14px); }
+}
+@keyframes float-subtle {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-8deg); }
+  50%       { transform: rotate(8deg); }
+}
+@keyframes count-up {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-::-webkit-scrollbar-track {
-  background: hsl(var(--muted));
-}
+.animate-float { animation: float 4s ease-in-out infinite; }
+.animate-float-slow { animation: float-slow 6s ease-in-out infinite; }
+.animate-float-subtle { animation: float-subtle 5s ease-in-out 0.8s infinite; }
+.animate-fade-up { animation: fade-up 0.6s ease-out forwards; }
 
+/* ── Scrollbar ──────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: hsl(var(--muted)); }
 ::-webkit-scrollbar-thumb {
   background: hsl(var(--muted-foreground) / 0.3);
   border-radius: 3px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted-foreground) / 0.5);
 }
