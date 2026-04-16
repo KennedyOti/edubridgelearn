@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\BookingController;
 use App\Http\Controllers\Api\V1\ContributorController;
 use App\Http\Controllers\Api\V1\CurriculumController;
 use App\Http\Controllers\Api\V1\LessonController;
+use App\Http\Controllers\Api\V1\ResourceController;
 use App\Http\Controllers\Api\V1\StudentController;
 use App\Http\Controllers\Api\V1\TutorController;
 use Illuminate\Support\Facades\Route;
@@ -48,6 +49,14 @@ Route::prefix('v1')->group(function () {
     Route::get('/lessons/{uuid}', [LessonController::class, 'show'])->middleware('auth:sanctum')->withoutMiddleware([]);
 
     // ──────────────────────────────────────────────────────────────────────
+    // Public Resource Marketplace (browsing only)
+    // ──────────────────────────────────────────────────────────────────────
+    Route::prefix('resources')->group(function () {
+        Route::get('/', [ResourceController::class, 'index']);
+        Route::get('/{uuid}', [ResourceController::class, 'show'])->where('uuid', '[0-9a-f-]{36}');
+    });
+
+    // ──────────────────────────────────────────────────────────────────────
     // Public Blog Routes
     // ──────────────────────────────────────────────────────────────────────
     Route::prefix('blogs')->group(function () {
@@ -75,6 +84,24 @@ Route::prefix('v1')->group(function () {
         // User profile (all authenticated roles)
         Route::get('/users/me', [AuthController::class, 'me']);
         Route::put('/users/me', [AuthController::class, 'updateProfile']);
+
+        // ── Resource Marketplace (authenticated) ─────────────────────────
+        Route::prefix('resources')->group(function () {
+            // Creator routes (tutor, contributor, admin)
+            Route::get('/my-uploads', [ResourceController::class, 'myResources'])->middleware('role:tutor,contributor,admin,super_admin');
+            Route::post('/', [ResourceController::class, 'store'])->middleware('role:tutor,contributor,admin,super_admin');
+            Route::put('/{uuid}', [ResourceController::class, 'update'])->middleware('role:tutor,contributor,admin,super_admin');
+            Route::post('/{uuid}/submit', [ResourceController::class, 'submit'])->middleware('role:tutor,contributor,admin,super_admin');
+
+            // Student routes
+            Route::get('/purchased', [ResourceController::class, 'purchasedResources'])->middleware('role:student');
+            Route::post('/{uuid}/purchase', [ResourceController::class, 'purchase'])->middleware('role:student');
+
+            // Shared authenticated routes
+            Route::post('/{uuid}/download', [ResourceController::class, 'download']);
+            Route::post('/{uuid}/review', [ResourceController::class, 'addReview'])->middleware('role:student');
+            Route::delete('/{uuid}', [ResourceController::class, 'destroy'])->middleware('role:tutor,contributor,admin,super_admin');
+        });
 
         // ── Student Routes ────────────────────────────────────────────────
         Route::middleware('role:student')->prefix('students')->group(function () {
@@ -155,6 +182,14 @@ Route::prefix('v1')->group(function () {
             // Super admin only
             Route::middleware('role:super_admin')->group(function () {
                 Route::post('/create-admin', [AdminController::class, 'createAdmin']);
+            });
+
+            // Resource moderation
+            Route::prefix('resources')->group(function () {
+                Route::get('/', [ResourceController::class, 'adminIndex']);
+                Route::post('/{uuid}/approve', [ResourceController::class, 'adminApprove']);
+                Route::post('/{uuid}/reject', [ResourceController::class, 'adminReject']);
+                Route::post('/{uuid}/unlist', [ResourceController::class, 'adminUnlist']);
             });
 
             // Blog moderation

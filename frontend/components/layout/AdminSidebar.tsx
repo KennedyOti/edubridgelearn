@@ -36,8 +36,8 @@ const primaryNav: AdminNavItem[] = [
 
 const secondaryNav: AdminNavItem[] = [
   { label: "Blog Moderation", href: "/admin/blog", icon: PenTool, tab: "blog" },
+  { label: "Resource Moderation", href: "/admin/resources", icon: BookOpen, tab: "resources" },
   { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },
-  { label: "Content", href: "/admin/content", icon: BookOpen },
   { label: "Reports", href: "/admin/reports", icon: Flag },
   { label: "Settings", href: "/admin/settings", icon: Settings },
 ];
