@@ -14,7 +14,7 @@ class OnboardingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'education_level' => ['required', 'string', 'in:cbc_primary,cbc_junior_secondary,cbc_senior_secondary,british,american,ib,college,university,lifelong_learner'],
+            'education_level' => ['required', 'string', 'exists:education_levels,code'],
             'curriculum' => ['nullable', 'string', 'max:100'],
             'grade' => ['nullable', 'string', 'max:50'],
             'institution' => ['nullable', 'string', 'max:255'],

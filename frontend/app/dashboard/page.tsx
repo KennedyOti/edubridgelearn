@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/auth-store";
+import api from "@/lib/api";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import {
   GraduationCap,
@@ -262,16 +263,16 @@ type Role = "student" | "tutor" | "contributor" | "moderator";
 
 const statsConfig: Record<Role, StatCardProps[]> = {
   student: [
-    { label: "Sessions Completed", value: "12", icon: Clock, iconBg: "bg-primary/10", iconColor: "text-primary", change: "+3 this week", trend: "up" },
-    { label: "Resources Accessed", value: "45", icon: FileText, iconBg: "bg-secondary/10", iconColor: "text-secondary", change: "+8 this month", trend: "up" },
-    { label: "Learning Hours", value: "24h", icon: Activity, iconBg: "bg-accent/10", iconColor: "text-accent", change: "+5 this week", trend: "up" },
-    { label: "Achievements", value: "7", icon: Trophy, iconBg: "bg-warning/10", iconColor: "text-warning", change: "+1 this week", trend: "up" },
+    { label: "Sessions Completed", value: "0", icon: Clock, iconBg: "bg-primary/10", iconColor: "text-primary" },
+    { label: "Resources Accessed", value: "0", icon: FileText, iconBg: "bg-secondary/10", iconColor: "text-secondary" },
+    { label: "Learning Hours", value: "0h", icon: Activity, iconBg: "bg-accent/10", iconColor: "text-accent" },
+    { label: "Achievements", value: "0", icon: Trophy, iconBg: "bg-warning/10", iconColor: "text-warning" },
   ],
   tutor: [
-    { label: "Total Sessions", value: "48", icon: Clock, iconBg: "bg-primary/10", iconColor: "text-primary", change: "+5 this month", trend: "up" },
-    { label: "Active Students", value: "12", icon: Users, iconBg: "bg-accent/10", iconColor: "text-accent", change: "+2 this month", trend: "up" },
-    { label: "This Month", value: "$840", icon: DollarSign, iconBg: "bg-success/10", iconColor: "text-success", change: "+12% vs last month", trend: "up" },
-    { label: "Avg Rating", value: "4.8", icon: Star, iconBg: "bg-warning/10", iconColor: "text-warning", change: "Stable", trend: "neutral" },
+    { label: "Total Sessions", value: "0", icon: Clock, iconBg: "bg-primary/10", iconColor: "text-primary" },
+    { label: "Active Students", value: "0", icon: Users, iconBg: "bg-accent/10", iconColor: "text-accent" },
+    { label: "This Month", value: "$0", icon: DollarSign, iconBg: "bg-success/10", iconColor: "text-success" },
+    { label: "Avg Rating", value: "0.0", icon: Star, iconBg: "bg-warning/10", iconColor: "text-warning" },
   ],
   contributor: [
     { label: "Resources Published", value: "23", icon: FileText, iconBg: "bg-primary/10", iconColor: "text-primary", change: "+2 this month", trend: "up" },
@@ -289,12 +290,12 @@ const statsConfig: Record<Role, StatCardProps[]> = {
 
 const chartConfig: Record<Role, { bar: number[]; area: number[] }> = {
   student: {
-    bar: [40, 65, 50, 80, 70, 45, 60],
-    area: [12, 18, 22, 28, 35, 42, 45, 52, 58, 65, 70, 78],
+    bar: [],
+    area: [],
   },
   tutor: {
-    bar: [3, 5, 4, 7, 6, 3, 5],
-    area: [280, 320, 410, 380, 520, 480, 610, 590, 720, 680, 800, 840],
+    bar: [],
+    area: [],
   },
   contributor: {
     bar: [80, 120, 100, 160, 140, 90, 110],
@@ -347,6 +348,19 @@ const chartTitles: Record<Role, { bar: string; area: string }> = {
   moderator: { bar: "Reviews This Week", area: "Activity Trend (Monthly)" },
 };
 
+interface ActivityItem {
+  label: string;
+  time: string;
+  color: string;
+}
+
+const recentActivityConfig: Record<Role, ActivityItem[]> = {
+  student: [],
+  tutor: [],
+  contributor: [],
+  moderator: [],
+};
+
 const welcomeText: Record<string, string> = {
   student: "Continue your learning journey",
   tutor: "Manage your tutoring sessions",
@@ -354,11 +368,47 @@ const welcomeText: Record<string, string> = {
   moderator: "Review content and manage the community",
 };
 
+// ─── Tutor dashboard data (real-time from backend) ─────────────────────────────
+
+interface TutorDashboard {
+  stats: {
+    total_sessions: number;
+    sessions_this_month: number;
+    active_students: number;
+    new_students_this_month: number;
+    earnings_this_month: number;
+    earnings_change_pct: number | null;
+    currency: string;
+    avg_rating: number;
+    verification_status: string;
+  };
+  charts: {
+    weekly_sessions: number[];
+    monthly_earnings: number[];
+  };
+  recent_activity: ActivityItem[];
+}
+
+function currencySymbol(code: string): string {
+  const map: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", KES: "KSh", NGN: "₦" };
+  return map[code] ?? `${code} `;
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, fetchUser } = useAuthStore();
+  const [tutorData, setTutorData] = useState<TutorDashboard | null>(null);
+
+  useEffect(() => {
+    if (isAuthenticated && user?.role === "tutor") {
+      api
+        .get("/tutors/dashboard")
+        .then((res) => setTutorData(res.data.data))
+        .catch(() => setTutorData(null));
+    }
+  }, [isAuthenticated, user?.role]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -370,15 +420,78 @@ export default function DashboardPage() {
     }
   }, [isAuthenticated, user, router]);
 
+  // Refresh the user from the backend so status changes (e.g. admin approval)
+  // are reflected without requiring a re-login.
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchUser();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
+
   if (!user) return null;
   if (user.role === "admin" || user.role === "super_admin") return null;
 
   const role = (user.role ?? "student") as Role;
-  const stats = statsConfig[role] ?? statsConfig.student;
-  const charts = chartConfig[role] ?? chartConfig.student;
+  let stats = statsConfig[role] ?? statsConfig.student;
+  let charts = chartConfig[role] ?? chartConfig.student;
   const actions = quickActionsConfig[role] ?? quickActionsConfig.student;
   const titles = chartTitles[role] ?? chartTitles.student;
+  let recentActivity = recentActivityConfig[role] ?? [];
   const isPending = user.status === "pending_approval";
+
+  // Replace the tutor placeholders with real-time data from the backend.
+  if (role === "tutor" && tutorData) {
+    const s = tutorData.stats;
+    const sym = currencySymbol(s.currency);
+    stats = [
+      {
+        label: "Total Sessions",
+        value: String(s.total_sessions),
+        icon: Clock,
+        iconBg: "bg-primary/10",
+        iconColor: "text-primary",
+        ...(s.sessions_this_month > 0
+          ? { change: `+${s.sessions_this_month} this month`, trend: "up" as const }
+          : {}),
+      },
+      {
+        label: "Active Students",
+        value: String(s.active_students),
+        icon: Users,
+        iconBg: "bg-accent/10",
+        iconColor: "text-accent",
+        ...(s.new_students_this_month > 0
+          ? { change: `+${s.new_students_this_month} this month`, trend: "up" as const }
+          : {}),
+      },
+      {
+        label: "This Month",
+        value: `${sym}${s.earnings_this_month.toLocaleString()}`,
+        icon: DollarSign,
+        iconBg: "bg-success/10",
+        iconColor: "text-success",
+        ...(s.earnings_change_pct !== null
+          ? {
+              change: `${s.earnings_change_pct >= 0 ? "+" : ""}${s.earnings_change_pct}% vs last month`,
+              trend: (s.earnings_change_pct >= 0 ? "up" : "down") as "up" | "down",
+            }
+          : {}),
+      },
+      {
+        label: "Avg Rating",
+        value: s.avg_rating ? s.avg_rating.toFixed(1) : "—",
+        icon: Star,
+        iconBg: "bg-warning/10",
+        iconColor: "text-warning",
+      },
+    ];
+    charts = {
+      bar: tutorData.charts.weekly_sessions,
+      area: tutorData.charts.monthly_earnings,
+    };
+    recentActivity = tutorData.recent_activity;
+  }
 
   const now = new Date();
   const dateStr = now.toLocaleDateString("en-US", {
@@ -492,7 +605,13 @@ export default function DashboardPage() {
               <span className="text-xs text-muted-foreground">Last 7 days</span>
             </div>
             <div className="h-36">
-              <BarChart data={charts.bar} labels={weekLabels} activeColor="#4F46E5" />
+              {charts.bar.length > 0 ? (
+                <BarChart data={charts.bar} labels={weekLabels} activeColor="#4F46E5" />
+              ) : (
+                <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
+                  No data yet
+                </div>
+              )}
             </div>
           </div>
 
@@ -502,7 +621,13 @@ export default function DashboardPage() {
               <span className="text-xs text-muted-foreground">This year</span>
             </div>
             <div className="h-36">
-              <AreaChart data={charts.area} labels={monthLabels} color="#7C3AED" />
+              {charts.area.length > 0 ? (
+                <AreaChart data={charts.area} labels={monthLabels} color="#7C3AED" />
+              ) : (
+                <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
+                  No data yet
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -517,27 +642,31 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Recent Activity (placeholder) */}
+        {/* Recent Activity */}
         <div className="bg-white rounded-2xl border border-border p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-foreground">Recent Activity</h2>
-            <button className="text-xs text-primary font-medium hover:text-primary-dark">
-              View all
-            </button>
+            {recentActivity.length > 0 && (
+              <button className="text-xs text-primary font-medium hover:text-primary-dark">
+                View all
+              </button>
+            )}
           </div>
-          <div className="space-y-3">
-            {[
-              { label: "Profile updated successfully", time: "2 min ago", color: "bg-success" },
-              { label: "New notification from EduBridge", time: "1 hr ago", color: "bg-primary" },
-              { label: "Account created", time: "Today", color: "bg-accent" },
-            ].map((item, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <span className={`w-2 h-2 rounded-full ${item.color} shrink-0`} />
-                <span className="text-sm text-foreground flex-1">{item.label}</span>
-                <span className="text-xs text-muted-foreground">{item.time}</span>
-              </div>
-            ))}
-          </div>
+          {recentActivity.length > 0 ? (
+            <div className="space-y-3">
+              {recentActivity.map((item, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <span className={`w-2 h-2 rounded-full ${item.color} shrink-0`} />
+                  <span className="text-sm text-foreground flex-1">{item.label}</span>
+                  <span className="text-xs text-muted-foreground">{item.time}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground py-4 text-center">
+              No recent activity yet
+            </p>
+          )}
         </div>
 
       </div>

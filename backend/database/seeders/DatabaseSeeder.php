@@ -226,6 +226,10 @@ class DatabaseSeeder extends Seeder
         $this->call(CurriculumSeeder::class);
         $this->command->info('Curriculum data seeded.');
 
+        // Seed onboarding option lists (countries, schools, learning goals)
+        $this->call(OnboardingOptionsSeeder::class);
+        $this->command->info('Onboarding options seeded.');
+
         // Seed subscription plans
         $this->call(SubscriptionPlanSeeder::class);
         $this->command->info('Subscription plans seeded.');

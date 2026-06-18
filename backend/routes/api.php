@@ -1,7 +1,12 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Admin\CountryController as AdminCountryController;
+use App\Http\Controllers\Api\V1\Admin\CurriculumManagementController;
+use App\Http\Controllers\Api\V1\Admin\LearningGoalController as AdminLearningGoalController;
+use App\Http\Controllers\Api\V1\Admin\SchoolController as AdminSchoolController;
 use App\Http\Controllers\Api\V1\AdminController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\OnboardingOptionController;
 use App\Http\Controllers\Api\V1\BlogController;
 use App\Http\Controllers\Api\V1\BookingController;
 use App\Http\Controllers\Api\V1\ContributorController;
@@ -39,6 +44,15 @@ Route::prefix('v1')->group(function () {
     });
 
     Route::get('/curricula', [CurriculumController::class, 'index']);
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Public Onboarding Options (admin-managed lists)
+    // ──────────────────────────────────────────────────────────────────────
+    Route::prefix('options')->group(function () {
+        Route::get('/countries', [OnboardingOptionController::class, 'countries']);
+        Route::get('/countries/{countryId}/schools', [OnboardingOptionController::class, 'schools']);
+        Route::get('/learning-goals', [OnboardingOptionController::class, 'learningGoals']);
+    });
 
     // Public tutor search & profiles
     Route::get('/tutors/search', [BookingController::class, 'searchTutors']);
@@ -182,6 +196,26 @@ Route::prefix('v1')->group(function () {
             // Super admin only
             Route::middleware('role:super_admin')->group(function () {
                 Route::post('/create-admin', [AdminController::class, 'createAdmin']);
+
+                // ── Onboarding option management ──────────────────────────
+                Route::apiResource('countries', AdminCountryController::class)
+                    ->only(['index', 'store', 'update', 'destroy']);
+                Route::apiResource('schools', AdminSchoolController::class)
+                    ->only(['index', 'store', 'update', 'destroy']);
+                Route::apiResource('learning-goals', AdminLearningGoalController::class)
+                    ->only(['index', 'store', 'update', 'destroy'])
+                    ->parameters(['learning-goals' => 'learningGoal']);
+
+                // ── Curriculum (education levels + grades) management ─────
+                Route::prefix('curriculum')->group(function () {
+                    Route::get('/', [CurriculumManagementController::class, 'index']);
+                    Route::post('/levels', [CurriculumManagementController::class, 'storeLevel']);
+                    Route::put('/levels/{level}', [CurriculumManagementController::class, 'updateLevel']);
+                    Route::delete('/levels/{level}', [CurriculumManagementController::class, 'destroyLevel']);
+                    Route::post('/grades', [CurriculumManagementController::class, 'storeGrade']);
+                    Route::put('/grades/{grade}', [CurriculumManagementController::class, 'updateGrade']);
+                    Route::delete('/grades/{grade}', [CurriculumManagementController::class, 'destroyGrade']);
+                });
             });
 
             // Resource moderation

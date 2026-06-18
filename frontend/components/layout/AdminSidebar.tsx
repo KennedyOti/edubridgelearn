@@ -17,6 +17,7 @@ import {
   BookOpen,
   Flag,
   PenTool,
+  SlidersHorizontal,
 } from "lucide-react";
 
 interface AdminNavItem {
@@ -56,6 +57,15 @@ export function AdminSidebar({ onClose, activeTab = "overview" }: AdminSidebarPr
     await logout();
     router.push("/admin/login");
   };
+
+  // Onboarding option management is super-admin only (matches the API scope).
+  const systemNav: AdminNavItem[] =
+    user?.role === "super_admin"
+      ? [
+          { label: "Onboarding Options", href: "/admin/options", icon: SlidersHorizontal, tab: "options" },
+          ...secondaryNav,
+        ]
+      : secondaryNav;
 
   return (
     <aside className="flex flex-col h-full bg-slate-900 text-white w-full">
@@ -119,7 +129,7 @@ export function AdminSidebar({ onClose, activeTab = "overview" }: AdminSidebarPr
           System
         </p>
         <ul className="space-y-0.5">
-          {secondaryNav.map((item) => {
+          {systemNav.map((item) => {
             const isActive = item.tab ? activeTab === item.tab : pathname === item.href;
             return (
               <li key={item.href}>

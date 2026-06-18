@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/lib/auth-store";
@@ -21,6 +21,32 @@ interface CurriculumData {
   grades: Record<string, string[]>;
 }
 
+interface SubjectOption {
+  id: number;
+  name: string;
+  code: string;
+  short_name: string | null;
+  color_hex: string | null;
+}
+
+interface CountryOption {
+  id: number;
+  name: string;
+  code: string | null;
+}
+
+interface SchoolOption {
+  id: number;
+  name: string;
+  city: string | null;
+  type: string | null;
+}
+
+interface GoalOption {
+  id: number;
+  label: string;
+}
+
 const steps = [
   { title: "Education Level", icon: GraduationCap, description: "What best describes your education?" },
   { title: "Your Details", icon: Globe, description: "Tell us more about where you study" },
@@ -37,7 +63,14 @@ export default function OnboardingPage() {
   useEffect(() => { setMounted(true); }, []);
   const [isLoading, setIsLoading] = useState(false);
   const [curriculumData, setCurriculumData] = useState<CurriculumData | null>(null);
-  const [subjects, setSubjects] = useState<string[]>([]);
+  const [subjects, setSubjects] = useState<SubjectOption[]>([]);
+  const [countries, setCountries] = useState<CountryOption[]>([]);
+  const [schools, setSchools] = useState<SchoolOption[]>([]);
+  const [goalOptions, setGoalOptions] = useState<GoalOption[]>([]);
+  const [countryId, setCountryId] = useState<number | "">("");
+  const [error, setError] = useState("");
+  const [optionsLoading, setOptionsLoading] = useState(true);
+  const [optionsError, setOptionsError] = useState("");
 
   const [formData, setFormData] = useState({
     education_level: "",
@@ -49,22 +82,61 @@ export default function OnboardingPage() {
     learning_goals: [] as string[],
   });
 
+  const loadOptions = useCallback(() => {
+    setOptionsLoading(true);
+    setOptionsError("");
+    api
+      .get("/curriculum/options")
+      .then(({ data }) => {
+        const payload = data.data as CurriculumData;
+        setCurriculumData(payload);
+        if (!payload?.education_levels?.length) {
+          setOptionsError(
+            "No curriculum options are available yet. Please contact support or try again shortly."
+          );
+        }
+      })
+      .catch(() => {
+        setOptionsError("We couldn't load the onboarding options. Please try again.");
+      })
+      .finally(() => setOptionsLoading(false));
+
+    // Country & learning-goal lists are admin-managed; failures here are
+    // non-blocking (the steps that use them are optional).
+    api.get("/options/countries").then(({ data }) => setCountries(data.data)).catch(() => setCountries([]));
+    api.get("/options/learning-goals").then(({ data }) => setGoalOptions(data.data)).catch(() => setGoalOptions([]));
+  }, []);
+
   useEffect(() => {
     if (!user || user.role !== "student") {
       router.push("/");
       return;
     }
-    // Fetch curriculum options
-    api.get("/curriculum/options").then(({ data }) => {
-      setCurriculumData(data.data);
-    });
-  }, [user, router]);
+    loadOptions();
+  }, [user, router, loadOptions]);
+
+  // Load schools whenever the selected country changes
+  useEffect(() => {
+    if (countryId === "") {
+      setSchools([]);
+      return;
+    }
+    api
+      .get(`/options/countries/${countryId}/schools`)
+      .then(({ data }) => setSchools(data.data as SchoolOption[]))
+      .catch(() => setSchools([]));
+  }, [countryId]);
 
   useEffect(() => {
     if (formData.education_level) {
-      api.get(`/curriculum/subjects/${formData.education_level}`).then(({ data }) => {
-        setSubjects(data.data);
-      });
+      api
+        .get(`/curriculum/subjects/${formData.education_level}`)
+        .then(({ data }) => {
+          setSubjects(data.data as SubjectOption[]);
+        })
+        .catch(() => setSubjects([]));
+    } else {
+      setSubjects([]);
     }
   }, [formData.education_level]);
 
@@ -92,6 +164,7 @@ export default function OnboardingPage() {
 
   const handleComplete = async () => {
     setIsLoading(true);
+    setError("");
     try {
       await api.post("/students/onboarding", formData);
       updateUser({
@@ -108,8 +181,15 @@ export default function OnboardingPage() {
         },
       });
       router.push("/dashboard");
-    } catch {
-      // Handle error
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { errors?: Record<string, string[]>; message?: string } } };
+      const respErrors = e.response?.data?.errors;
+      if (respErrors && typeof respErrors === "object" && !Array.isArray(respErrors)) {
+        const firstKey = Object.keys(respErrors)[0];
+        setError(respErrors[firstKey]?.[0] || "Could not complete onboarding. Please try again.");
+      } else {
+        setError(e.response?.data?.message || "Could not complete onboarding. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -136,17 +216,6 @@ export default function OnboardingPage() {
         }, {} as Record<string, typeof curriculumData.education_levels>)
       )
     : [];
-
-  const goalOptions = [
-    "Improve grades",
-    "Exam preparation",
-    "Learn new skills",
-    "Career development",
-    "Explore new subjects",
-    "Academic competitions",
-    "University preparation",
-    "Catch up on coursework",
-  ];
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -202,6 +271,26 @@ export default function OnboardingPage() {
             <h2 className="text-lg font-semibold text-foreground">{steps[currentStep].description}</h2>
           </div>
 
+          {error && (
+            <div className="mb-6 p-3 rounded-xl bg-error/10 border border-error/20 text-error text-sm">
+              {error}
+            </div>
+          )}
+
+          {optionsLoading ? (
+            <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              <p className="mt-4 text-sm">Loading your onboarding options…</p>
+            </div>
+          ) : optionsError ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <p className="text-sm text-error mb-4">{optionsError}</p>
+              <Button onClick={loadOptions} variant="outline">
+                Try again
+              </Button>
+            </div>
+          ) : (
+          <>
           {/* Step 1: Education Level */}
           {currentStep === 0 && (
             <div className="space-y-6">
@@ -256,23 +345,47 @@ export default function OnboardingPage() {
               )}
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1.5">Country</label>
-                <input
-                  type="text"
-                  value={formData.country}
-                  onChange={(e) => updateField("country", e.target.value)}
-                  placeholder="e.g., Kenya"
+                <select
+                  value={countryId}
+                  onChange={(e) => {
+                    const id = e.target.value ? Number(e.target.value) : "";
+                    setCountryId(id);
+                    const selected = countries.find((c) => c.id === id);
+                    updateField("country", selected?.name || "");
+                    updateField("institution", "");
+                  }}
                   className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                />
+                >
+                  <option value="">Select your country</option>
+                  {countries.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1.5">School / Institution (optional)</label>
-                <input
-                  type="text"
+                <select
                   value={formData.institution}
                   onChange={(e) => updateField("institution", e.target.value)}
-                  placeholder="e.g., Nairobi School"
-                  className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                />
+                  disabled={countryId === ""}
+                  className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <option value="">
+                    {countryId === ""
+                      ? "Select a country first"
+                      : schools.length === 0
+                      ? "No schools listed for this country yet"
+                      : "Select your school"}
+                  </option>
+                  {schools.map((s) => (
+                    <option key={s.id} value={s.name}>
+                      {s.name}
+                      {s.city ? ` — ${s.city}` : ""}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
           )}
@@ -284,16 +397,16 @@ export default function OnboardingPage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {subjects.map((subject) => (
                   <button
-                    key={subject}
-                    onClick={() => toggleSubject(subject)}
+                    key={subject.id}
+                    onClick={() => toggleSubject(subject.name)}
                     className={`p-3 rounded-xl border text-sm font-medium transition-all cursor-pointer ${
-                      formData.subjects.includes(subject)
+                      formData.subjects.includes(subject.name)
                         ? "border-primary bg-primary-50 text-primary"
                         : "border-border hover:border-primary/30 text-foreground"
                     }`}
                   >
-                    {formData.subjects.includes(subject) && <Check className="w-3 h-3 inline mr-1" />}
-                    {subject}
+                    {formData.subjects.includes(subject.name) && <Check className="w-3 h-3 inline mr-1" />}
+                    {subject.name}
                   </button>
                 ))}
               </div>
@@ -312,16 +425,16 @@ export default function OnboardingPage() {
               <div className="grid grid-cols-2 gap-3">
                 {goalOptions.map((goal) => (
                   <button
-                    key={goal}
-                    onClick={() => toggleGoal(goal)}
+                    key={goal.id}
+                    onClick={() => toggleGoal(goal.label)}
                     className={`p-3 rounded-xl border text-sm font-medium transition-all text-left cursor-pointer ${
-                      formData.learning_goals.includes(goal)
+                      formData.learning_goals.includes(goal.label)
                         ? "border-primary bg-primary-50 text-primary"
                         : "border-border hover:border-primary/30 text-foreground"
                     }`}
                   >
-                    {formData.learning_goals.includes(goal) && <Check className="w-3 h-3 inline mr-1" />}
-                    {goal}
+                    {formData.learning_goals.includes(goal.label) && <Check className="w-3 h-3 inline mr-1" />}
+                    {goal.label}
                   </button>
                 ))}
               </div>
@@ -360,6 +473,8 @@ export default function OnboardingPage() {
               </Button>
             )}
           </div>
+          </>
+          )}
         </div>
       </div>
     </div>
